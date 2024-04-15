@@ -59,7 +59,7 @@ public:
         cin >> time;
     }
 };
-class exam : public questions
+class exam 
 {
     int tscore, ttime;
 
