@@ -1,7 +1,11 @@
 #include <iostream>
 #include<string>
+#include<fstream>
 namespace bp
 {
+     
+    
+    
     template<class T>
     class Array
     {
@@ -14,7 +18,11 @@ namespace bp
         {
 
         }
-
+        void _get_emptyed()
+        {
+            delete[] heap_alocated_array;
+            heap_alocated_array=new T[max_size];
+        }
 
         void push(T value)
         {
@@ -50,8 +58,62 @@ namespace bp
             delete[] heap_alocated_array;
         }
     };
+    namespace file //each function will update a specific file
+    {
+     // void exams_save(std::ostream fb,bool& file_is_empty,Array<std::string>  )
+     //students list
+     void student_list_f_save(std::ostream _ostream,Array<simple_daneshjo> * _students_list)
+     {        
+        int size=_students_list->get_size();
+       for (int i = 0; i < size; i++)
+       {
+        simple_daneshjo temp_daneshjo=_students_list->operator[](i);
+        _ostream<<temp_daneshjo.user_name<<'\n'<<temp_daneshjo.pass_word<<'\n'<<temp_daneshjo.shomare_daneshjoii<<'\n';
+       }
+       
+     }   
+     void student_list_f_reaload(std::istream _istream,bool& file_is_empty,Array<simple_daneshjo> * _students_list,int& count)
+     {
+        _students_list->_get_emptyed();
+        std::string temp_str;
+        while (std::getline(_istream >> std::ws, temp_str))
+	    {
+            simple_daneshjo temp_daneshjo;
+            temp_daneshjo.user_name=temp_str;
+            _istream>>temp_daneshjo.pass_word>>temp_daneshjo.shomare_daneshjoii;            
+            _students_list->push(temp_daneshjo);
+		count++;		
+	    }	        
+     }
+     //number of student lists
+      void student_list_number_save(std::ostream _ostream,int size)
+      {
+        _ostream<<size;
+      }
+      void student_list_number_reload(std::istream _istream,int &size)
+      {
+        _istream>>size;
+      }
+      //number of exams
+      void exam_number_save(std::ostream _ostream,int size)
+      {
+        _ostream<<size;
+      }
+      void exam_number_reload(std::istream _istream,int &size)
+      {
+        _istream>>size;
+      }
+      //exam
 
+
+      //exam resaults
+
+
+      //
+    };
 }
+
+void read_file(std::string path);
 class person
 {
 public:
@@ -61,13 +123,28 @@ public:
     person(std::string _user_name = {}, std::string _pass_word = {}) :user_name(_user_name), pass_word(_pass_word)
     {
 
-    }
+    }    
     ~person()
     {
 
     }
 
 };
+ class simple_daneshjo :public person
+    {
+    public:        
+        int shomare_daneshjoii;        
+    public:
+        simple_daneshjo(int _sd=0,std::string _name={},std::string _pass_word={}):person(_name,_pass_word), shomare_daneshjoii(_sd)
+        {
+
+        }
+        
+        ~simple_daneshjo()
+        {
+
+        }
+    };  
 bp::Array<person>* teachers = nullptr;
 bp::Array<person>* students = nullptr;
 int teachers_size = -1;
@@ -239,4 +316,60 @@ void enter_dashboard(bool is_teacher, person* _persone)
 
 
 
+}
+void handle_file(int file_type,std::string file_name,bool read_not_write,std::string path="./",bool delete_old_file=false)
+{  
+path += file_name;
+
+if (read_not_write)
+{
+	
+	std::filebuf fb;
+	fb.open(path, std::ios::app | std::ios::in);
+	std::istream _istream(&fb);
+	std::string temp_str;	
+	int count = 0;
+    //reading file
+	switch (file_type)
+    {
+    case 
+        break;
+    
+    default:
+        break;
+    }
+    							
+	if (!count)		
+	{
+	//	std::cout << "file was empty" << std::endl;
+		//exit(1);
+	}
+    //close flie stream
+    fb.close();	
+}
+else
+{
+    int n;
+	std::cin >> n;
+	std::filebuf fb;
+    if (delete_old_file)
+    {
+     fb.open(path,std::ios::out);
+    }
+    else
+    {
+    fb.open(path,std::ios::app | std::ios::out);
+    }	
+    //wrting to file
+	std::ostream _ostream(&fb);			
+	for (int i = 0; i < n; i++)
+	{
+	std::string temp_str;
+	std::getline(std::cin >> std::ws, temp_str);
+	_ostream << temp_str << '\n';
+	}
+    //close flie stream
+	fb.close();
+    
+}
 }
