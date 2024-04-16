@@ -77,7 +77,7 @@ int main()
     int n;
     cout << "Enter the number of questions";
     cin >> n;
-    questions num[n];
+   questions *p =new num[n];
     for (int i = 0; i < n; i++)
     {
         num[i].kind();
