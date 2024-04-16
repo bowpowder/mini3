@@ -84,5 +84,6 @@ int main()
         num[i].set();
     };
     exam total;
+    delete p;
     return 0;
 }
