@@ -59,18 +59,19 @@ namespace bp
         }
     };
     namespace file //each function will update a specific file
-    {
-     // void exams_save(std::ostream fb,bool& file_is_empty,Array<std::string>  )
+    {     
      //students list
      void student_list_f_save(std::ostream _ostream,Array<simple_daneshjo> * _students_list)
      {        
         int size=_students_list->get_size();
+        std::string save_string;
        for (int i = 0; i < size; i++)
        {
         simple_daneshjo temp_daneshjo=_students_list->operator[](i);
-        _ostream<<temp_daneshjo.user_name<<'\n'<<temp_daneshjo.pass_word<<'\n'<<temp_daneshjo.shomare_daneshjoii<<'\n';
+        //_ostream<<temp_daneshjo.user_name<<'\n'<<temp_daneshjo.pass_word<<'\n'<<temp_daneshjo.shomare_daneshjoii<<'\n';
+        save_string+=temp_daneshjo.user_name+'\n'+temp_daneshjo.pass_word+'\n'+std::to_string( temp_daneshjo.shomare_daneshjoii)+'\n';        
        }
-       
+       _ostream<<save_string;
      }   
      void student_list_f_reaload(std::istream _istream,bool& file_is_empty,Array<simple_daneshjo> * _students_list,int& count)
      {
@@ -111,6 +112,10 @@ namespace bp
 
       //
     };
+    enum save_load_funcs
+    {
+        students_list_save,students_list_load,students_list_n_s,students_list_n_l,exam_save,exam_load,exam_n_s,exam_n_l
+    }
 }
 
 void read_file(std::string path);
@@ -152,6 +157,7 @@ int students_size = -1;
 
 void login_system();
 void enter_dashboard(bool is_teacher, person* _persone);
+
 int main()
 {
     //teachers
@@ -317,7 +323,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
 
 
 }
-void handle_file(int file_type,std::string file_name,bool read_not_write,std::string path="./",bool delete_old_file=false)
+void handle_file(bp::save_load_funcs s_l_func,std::string file_name,bool read_not_write,std::string path="./",bool delete_old_file=false)
 {  
 path += file_name;
 
@@ -330,11 +336,33 @@ if (read_not_write)
 	std::string temp_str;	
 	int count = 0;
     //reading file
-	switch (file_type)
+	switch (s_l_func)
     {
-    case 
-        break;
+        //exams
+    case bp::save_load_funcs::exam_save:
     
+        break;
+    case bp::save_load_funcs::exam_load:
+    
+        break;
+    case bp::save_load_funcs::exam_n_s:
+    
+        break;
+     case bp::save_load_funcs::exam_n_l:
+    //student lists
+        break;
+    case bp::save_load_funcs::students_list_save:
+    //bp::students_list_save()
+        break;
+    case bp::save_load_funcs::students_list_load:
+    
+        break;
+    case bp::save_load_funcs::students_list_n_s:
+    
+        break; 
+    case bp::save_load_funcs::students_list_n_l:
+    //
+        break;             
     default:
         break;
     }
