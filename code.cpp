@@ -3,6 +3,70 @@
 #include<fstream>  
 namespace bp
 {     
+    
+    void create_new_exam()
+    {
+        exam* _exam=nullptr;
+        std::string exam_name;
+        std::getline(std::cin>>std::ws,exam_name);
+       {//scoped
+            std::cout << "0 : back to dashboard" << '\n';
+            std::cout << "1 : add fisrt question" << '\n';
+            int input;
+            std::cin>>input;
+            switch (input)
+            {
+            case 0://going back to the dashboard
+            std::cout<<"going back to dashboard"<<std::endl;
+                return;
+                break;
+                 case 1://creating an examp obj and adding first question
+                 //creating an exam obj
+             _exam=new exam(1);
+                //adding first question
+             _exam->add_question(true);                
+                break;
+            
+            default:
+            std::cout<<"invalid command"<<std::endl;
+            std::cout<<"going back to dashboard"<<std::endl;
+            return;
+            break;
+            }
+       }            
+        while (true)
+        {
+            std::cout << "0 : save exam" << '\n';
+            std::cout << "1 : add more questions" << '\n';
+            int input;
+            std::cin>>input;
+            switch (input)
+            {
+            case 0://saving exam and exiting this loop
+            //save exam
+            
+            //going back to dashboard
+            std::cout<<"going back to dashboard"<<std::endl;
+                return;
+                break;
+
+                 case 1:
+                 //adding more questions          
+                 _exam->add_question(false);                
+                break;            
+            default: //saving exam and exiting this loop           
+            //save exam
+            
+
+            //going back to dashboard
+            std::cout<<"going back to dashboard"<<std::endl;
+                return;
+                break;
+            }
+        }
+        
+            
+    }
     template<class T>
     class Array
     {
@@ -157,7 +221,7 @@ public:
    void* t_Or_d_question;
 
 public:
-   question(bool _is_test=false,int _score=0,int _time=0,std::string _question_str={}):is_test(_is_test),score(_score),time(_time),question_str(_question_str),t_Or_d_question(nullptr)
+   question(bool _is_test=true,int _score=0,int _time=0,std::string _question_str={}):is_test(_is_test),score(_score),time(_time),question_str(_question_str),t_Or_d_question(nullptr)
    {
      if (is_test)
      {
@@ -185,6 +249,16 @@ public:
     }
     t_Or_d_question=nullptr;
    }  
+   void change_to_test()
+   {
+      delete t_Or_d_question;
+       t_Or_d_question=(test_question*)t_Or_d_question;
+   }
+   void change_to_descriptive()
+   {
+    delete t_Or_d_question;
+    t_Or_d_question=(descriptive_question*)t_Or_d_question;
+   }
 };
 class exam 
 {
@@ -199,6 +273,153 @@ public:
     ~exam()
     {    
 
+    }
+    void add_question(bool is_first)
+    {
+        bool is_test=false;
+        char input;
+        std::cout<<"c : cancel"<<std::endl;
+        std::cout<<"is it test?(y/n)"<<std::endl;  
+        std::cin>>input;
+        int old_size=questions.get_size();
+        if (!is_first)
+        {
+            questions.push(new question());
+        }
+        
+        switch (input)
+        {
+        case 'c':
+            std::cout<<"canceling"<<std::endl;
+           return;
+            break;
+             case 'y':    
+             is_test=true;       
+           if (is_first)
+           {
+            questions[0].change_to_test();
+           } 
+           else
+           {
+            questions[old_size].change_to_test();
+           }          
+            break;
+             case 'n':
+             is_test=false;
+           if (is_first)
+           {
+            questions[0].change_to_descriptive();
+           }
+           else
+           {
+            questions[old_size].change_to_descriptive();
+           }
+            break;
+        
+        default:
+         std::cout<<"invalid command"<<std::endl;
+         std::cout<<"canceling"<<std::endl;
+           return;            
+            break;
+        }
+        std::cout<<"enter question_str"<<std::endl;
+        std::string temp_str;
+        std::getline(std::cin>>std::ws,temp_str);
+        std::cout<<"enter max_time of answering"<<std::endl;
+        int temp_time,temp_score;
+        std::cin>>temp_time;
+        std::cout<<"enter score"<<std::endl;
+        std::cin>>temp_score;
+        std::string test_options[4];
+        posible_test_awnsers currect_test_anwser;
+        std::string descriptive_answer={};               
+        if (is_test)
+        {
+           std::cout<<"enter option a:"<<std::endl;
+           std::getline(std::cin>>std::ws,test_options[0]);
+           std::cout<<"enter option b:"<<std::endl;
+           std::getline(std::cin>>std::ws,test_options[1]);
+           std::cout<<"enter option c:"<<std::endl;
+           std::getline(std::cin>>std::ws,test_options[2]);
+           std::cout<<"enter option d:"<<std::endl;
+           std::getline(std::cin>>std::ws,test_options[3]);
+           std::cout<<"current answer"<<std::endl;
+           char char_c_a;
+           std::cin>>char_c_a;
+           switch (char_c_a)
+           {
+            case 'a':
+            std::cout<<"setting currect answer to a"<<std::endl;
+            currect_test_anwser=posible_test_awnsers::a;
+            break;
+            case 'b':
+            std::cout<<"setting currect answer to b"<<std::endl;
+            currect_test_anwser=posible_test_awnsers::b;
+            break;
+            case 'c':
+            std::cout<<"setting currect answer to c"<<std::endl;
+            currect_test_anwser=posible_test_awnsers::c;
+            break;
+            case 'd':
+            std::cout<<"setting currect answer to d"<<std::endl;
+            currect_test_anwser=posible_test_awnsers::d;
+            break;           
+           default:
+            std::cout<<"default currect answer is b"<<std::endl;
+            std::cout<<"setting currect answer to b"<<std::endl;
+            currect_test_anwser=posible_test_awnsers::b;
+            break;
+           }
+        }
+        else
+        {
+        std::cout<<"enter currect_descriptive answer"<<std::endl;
+        std::getline(std::cin>>std::ws,descriptive_answer);
+        }      
+        if (is_first)
+        {
+            questions[0].question_str=temp_str;
+            questions[0].time=temp_time;
+            questions[0].score=temp_score;
+            if (is_test)
+            {
+               test_question* t_ptr=(test_question*) questions[0].t_Or_d_question;
+               t_ptr->a=test_options[0];
+               t_ptr->b=test_options[1];
+               t_ptr->c=test_options[2];
+               t_ptr->d=test_options[3];
+               t_ptr->currect_anwser=currect_test_anwser;
+            }
+            else
+            {
+             descriptive_question* d_ptr=(descriptive_question*) questions[0].t_Or_d_question;
+             d_ptr->string_answer=descriptive_answer;
+            }
+            
+            
+        }
+        else
+        {
+            questions[old_size].question_str=temp_str;
+            questions[old_size].time=temp_time;
+            questions[old_size].score=temp_score;
+            if (is_test)
+            {
+               test_question* t_ptr=(test_question*) questions[old_size].t_Or_d_question;
+               t_ptr->a=test_options[0];
+               t_ptr->b=test_options[1];
+               t_ptr->c=test_options[2];
+               t_ptr->d=test_options[3];
+               t_ptr->currect_anwser=currect_test_anwser;
+            }
+            else
+            {
+             descriptive_question* d_ptr=(descriptive_question*) questions[old_size].t_Or_d_question;
+             d_ptr->string_answer=descriptive_answer;
+            }
+        }
+       std::cout<<"question was added successfully"<<std::endl;        
+       return;
     }
     void calculate_t_time()
     {
@@ -217,7 +438,7 @@ public:
  };
 }
 
-void read_file(std::string path);
+//void read_file(std::string path);
 class person
 {
 public:
@@ -398,7 +619,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
                 break;
             case 1:
                 //creat a new exam
-
+                bp::create_new_exam();
                 break;
             case 2:
                 //exam history
