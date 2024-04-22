@@ -8,6 +8,7 @@ namespace bp
     {
         exam* _exam=nullptr;
         std::string exam_name;
+        std::cout<<"exam_name"<<std::endl;
         std::getline(std::cin>>std::ws,exam_name);
        {//scoped
             std::cout << "0 : back to dashboard" << '\n';
@@ -22,7 +23,7 @@ namespace bp
                 break;
                  case 1://creating an examp obj and adding first question
                  //creating an exam obj
-             _exam=new exam(1);
+             _exam=new exam(1,exam_name);
                 //adding first question
              _exam->add_question(true);                
                 break;
@@ -171,11 +172,16 @@ namespace bp
       //exam resaults
 
 
-      //
+      //exam name
+      void exam_name_load(std::istream _istream,std::string& _name)
+      {
+        _istream>>_name;
+      }
+
     };
     enum save_load_funcs
     {
-        students_list_save,students_list_load,students_list_n_s,students_list_n_l,exam_save,exam_load,exam_n_s,exam_n_l
+        students_list_save,students_list_load,students_list_n_s,students_list_n_l,exam_save,exam_load,exam_n_s,exam_n_l,load_exam_name
     };
     enum save_load_state
     {
@@ -274,7 +280,7 @@ class exam
     int total_score, total_time;    
     Array<question> questions;
 public:
-    exam(int _number_of_questions=1, int _total_score=0,int _total_time=0,std::string _exam_name={})
+    exam(int _number_of_questions=1,std::string _exam_name={}, int _total_score=0,int _total_time=0)
     :questions(_number_of_questions),total_score(_total_score),total_time(_total_time),exam_name(_exam_name)
     {
 
@@ -486,9 +492,28 @@ int students_size = -1;
 //load and save files
 namespace g_V
 {
+int number_of_s_lists=0;    
 int number_of_exams=0;
-void* loaded_exams=nullptr;
-//bp::Array<bp::exam> loaded_exams()
+void* loaded_exam=nullptr;
+void show_loaded_exam()
+{
+    ///
+}
+void edit_loaded_exam()
+{
+    ///
+    //potantioly save that exam back to the given file name
+     //  if (/* condition */)
+      // {
+        save_loaded_exam();
+    //   }
+                
+}
+void save_loaded_exam()
+{
+    ////
+}
+std::string* exam_names=nullptr;
 };
 //
 void login_system();
@@ -640,27 +665,85 @@ void enter_dashboard(bool is_teacher, person* _persone)
             case 2:
                 //exam history                
                 //load exam number file
-                std::string file_name="exam_numbers";
-                std::string file_path="./";
-                void* _ptr=&g_V::number_of_exams;
-                 handle_file(bp::save_load_funcs::exam_n_l,file_name,bp::save_load_state::load,file_path,bp::delete_old_f_state::dont_delete,_ptr);               
+                { 
+                 std::string file_name="exam_numbers";
+                 std::string file_path="./";
+                 void* _ptr=&g_V::number_of_exams;
+                 handle_file(bp::save_load_funcs::exam_n_l,file_name,bp::save_load_state::load,file_path,bp::delete_old_f_state::dont_delete,_ptr);      
+                }         
                 //load that number of exam names
-                
+                {
+                 delete g_V::exam_names;
+                 g_V::exam_names=new std::string[g_V::number_of_exams];
+                 std::string _exam_name={};
+                 void* _ptr=&_exam_name;
+                 for (int i = 0; i < g_V::number_of_exams; i++)
+                 {
+                    std::string file_name="exam";
+                    file_name+=std::to_string(i);
+                    std::string _path="./exams/";
+                    handle_file(bp::save_load_funcs::exam_load,file_name,bp::save_load_state::load,_path,bp::delete_old_f_state::dont_delete,_ptr);                    
+                    g_V::exam_names[i]=_exam_name;
+                 }
+                }                
                 //show that many number of exams
-
+                //show the exam names
+                std::cout<<"-1 :go back"<<std::endl;
+                std::cout<<"exams:"<<std::endl;
+                for (int i = 0; i < g_V::number_of_exams; i++)
+                {
+                    std::cout<<i<<" :"<<g_V::exam_names[i]<<std::endl;
+                }
                 //let the user choose what exam they want to load
-
+                int other_input;
+                std::cin>>other_input;
+                if(other_input==-1)
+                {//stop right here and go back                  
+                std::cout<<"going back"<<std::endl;
+                    break;
+                }                             
                 //load that exam
-
+                {
+                    std::string file_name="exam"+std::to_string(other_input);
+                    std::string file_path="./exams/";
+                    handle_file(bp::save_load_funcs::exam_load,file_name,bp::save_load_state::load,file_path,bp::delete_old_f_state::dont_delete,g_V::loaded_exam);
+                }
                 //show show that exam to the user
-
-                //let them edid the iner_contents of that exam
-
-                //potantioly save that exam back to the given file name
-                
+                g_V::show_loaded_exam();
+                //let them edit the iner_contents of that exam
+                g_V::edit_loaded_exam();   //and maybe save it             
                 break;
             case 3:
                 //student lists
+                //load student lists number file
+                {
+                    std::string file_name="student_lists_number";
+                    std::string path="./";
+                    void* _Ptr=&g_V::number_of_s_lists;
+                    handle_file(bp::save_load_funcs::students_list_n_l,file_name,bp::save_load_state::load,path,bp::delete_old_f_state::dont_delete,_Ptr);
+                }
+                //show them to the user
+                std::cout<<"-1 :go back"<<std::endl;
+                std::cout<<"exams:"<<std::endl;
+                for (int i = 0; i < g_V::number_of_s_lists; i++)
+                {
+                    std::cout<<i<<" :"<<"studentlist"<<i;
+                }                
+                //let the user choose which one they what to load
+                int other_input;
+                std::cin>>other_input;
+                if (other_input==-1)
+                {//stop right here and go back
+                 std::cout<<"going back"<<std::endl;
+                 break;
+                }                
+                //load that specific list 
+
+                //show that list
+
+                //let the user edit that list
+
+                //potantioly save that list back to the file that it came from
 
                 break;
             default:
