@@ -177,8 +177,15 @@ namespace bp
     {
         students_list_save,students_list_load,students_list_n_s,students_list_n_l,exam_save,exam_load,exam_n_s,exam_n_l
     };
-
-       enum posible_test_awnsers
+    enum save_load_state
+    {
+        load,save
+    };
+    enum delete_old_f_state
+    {
+        _delete,dont_delete
+    };
+    enum posible_test_awnsers
     {
         a,b,c,d
     };
@@ -263,10 +270,12 @@ public:
 class exam 
 {
     public:
+    std::string exam_name;
     int total_score, total_time;    
     Array<question> questions;
 public:
-    exam(int _number_of_questions=1, int _total_score=0,int _total_time=0):questions(_number_of_questions),total_score(_total_score),total_time(_total_time)
+    exam(int _number_of_questions=1, int _total_score=0,int _total_time=0,std::string _exam_name={})
+    :questions(_number_of_questions),total_score(_total_score),total_time(_total_time),exam_name(_exam_name)
     {
 
     }
@@ -474,7 +483,14 @@ bp::Array<person>* teachers = nullptr;
 bp::Array<person>* students = nullptr;
 int teachers_size = -1;
 int students_size = -1;
-
+//load and save files
+namespace g_V
+{
+int number_of_exams=0;
+void* loaded_exams=nullptr;
+//bp::Array<bp::exam> loaded_exams()
+};
+//
 void login_system();
 void enter_dashboard(bool is_teacher, person* _persone);
 
@@ -622,8 +638,26 @@ void enter_dashboard(bool is_teacher, person* _persone)
                 bp::create_new_exam();
                 break;
             case 2:
-                //exam history
+                //exam history                
+                //load exam number file
+                std::string file_name="exam_numbers";
+                std::string file_path="./";
+                void* _ptr=&g_V::number_of_exams;
+                 handle_file(bp::save_load_funcs::exam_n_l,file_name,bp::save_load_state::load,file_path,bp::delete_old_f_state::dont_delete,_ptr);               
+                //load that number of exam names
+                
+                //show that many number of exams
 
+                //let the user choose what exam they want to load
+
+                //load that exam
+
+                //show show that exam to the user
+
+                //let them edid the iner_contents of that exam
+
+                //potantioly save that exam back to the given file name
+                
                 break;
             case 3:
                 //student lists
@@ -643,11 +677,11 @@ void enter_dashboard(bool is_teacher, person* _persone)
 
 
 }
-void handle_file(bp::save_load_funcs s_l_func,std::string file_name,bool read_not_write,std::string path="./",bool delete_old_file=false)
+void handle_file(bp::save_load_funcs s_l_func,std::string file_name,bp::save_load_state _read_write_state,std::string path="./",bp::delete_old_f_state _delete_old_file=bp::delete_old_f_state::dont_delete,void* _ptr)
 {  
 path += file_name;
 
-if (read_not_write)
+if (_read_write_state==bp::save_load_state::load)//read
 {
 	
 	std::filebuf fb;
@@ -695,16 +729,16 @@ if (read_not_write)
     //close flie stream
     fb.close();	
 }
-else
+else //save
 {
     int n;
 	std::cin >> n;
 	std::filebuf fb;
-    if (delete_old_file)
+    if (_delete_old_file==bp::delete_old_f_state::_delete)//delete old file
     {
      fb.open(path,std::ios::out);
     }
-    else
+    else //dont delete old file
     {
     fb.open(path,std::ios::app | std::ios::out);
     }	
