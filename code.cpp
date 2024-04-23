@@ -3,7 +3,12 @@
 #include<fstream>  
 namespace bp
 {     
-    
+    void save_new_exam(void* _exam)
+    {
+      std::string file_name=((exam*)_exam)->exam_name;
+      std::string _path="./exams/";
+      handle_file(bp::save_load_funcs::exam_save,file_name,bp::save_load_state::save,_path,bp::delete_old_f_state::_delete,&_exam);
+    }
     void create_new_exam()
     {
         exam* _exam=nullptr;
@@ -15,6 +20,7 @@ namespace bp
             std::cout << "1 : add fisrt question" << '\n';
             int input;
             std::cin>>input;
+            
             switch (input)
             {
             case 0://going back to the dashboard
@@ -45,7 +51,7 @@ namespace bp
             {
             case 0://saving exam and exiting this loop
             //save exam
-            
+            save_new_exam(_exam);
             //going back to dashboard
             std::cout<<"going back to dashboard"<<std::endl;
                 return;
@@ -57,16 +63,13 @@ namespace bp
                 break;            
             default: //saving exam and exiting this loop           
             //save exam
-            
-
+            save_new_exam(_exam);
             //going back to dashboard
             std::cout<<"going back to dashboard"<<std::endl;
                 return;
                 break;
             }
-        }
-        
-            
+        }                   
     }
     template<class T>
     class Array
@@ -167,8 +170,60 @@ namespace bp
         _istream>>size;
       }
       //exam
-
-
+      void exam_save(std::ostream _ostream,void* _loaded_exam)
+      {
+        std::string out_string={};
+        exam* e_ptr=(exam*)_loaded_exam;
+        out_string+=((exam*)_loaded_exam)->exam_name+'\n';
+        int exam_size=e_ptr->number_of_questions();
+        for (int i = 0; i < exam_size; i++)
+        {
+            out_string+=e_ptr->questions[i].question_str+="\n";
+            out_string+=e_ptr->questions[i].is_test+'\n';            
+            if (e_ptr->questions[i].is_test)//its a test
+            {
+                test_question* t_q_ptr=((test_question*)(e_ptr->questions[i].t_Or_d_question));
+                out_string+=t_q_ptr->a+'\n'+t_q_ptr->b+'\n'+t_q_ptr->c+'\n'+t_q_ptr->d+'\n';
+                out_string+=t_q_ptr->currect_anwser+'\n';          
+                
+            }
+            else //its descriptive
+            {
+               descriptive_question* d_q_ptr=((descriptive_question*)(e_ptr->questions[i].t_Or_d_question));
+               out_string+=d_q_ptr->string_answer+'\n';
+            }            
+        }
+        _ostream<<out_string;
+      }
+      void exam_reload(std::istream _istream,void* _loaded_exam)
+      {
+        std::string in_string={};
+        exam* e_ptr=(exam*)_loaded_exam;
+        std::getline(_istream>>std::ws,in_string);
+        e_ptr->exam_name=in_string;
+        int exam_size=e_ptr->number_of_questions();
+         for (int i = 0; i < exam_size; i++)
+        {   
+            std::getline(_istream>>std::ws,in_string);
+            e_ptr->questions[i].question_str=in_string;
+            _istream>>e_ptr->questions[i].is_test;                    
+            if (e_ptr->questions[i].is_test)//its a test
+            {
+                test_question* t_q_ptr=((test_question*)(e_ptr->questions[i].t_Or_d_question));
+                std::getline(_istream>>std::ws,in_string);
+                t_q_ptr->a+'\n'+t_q_ptr->b+'\n'+t_q_ptr->c+'\n'+t_q_ptr->d+'\n';
+                out_string+=t_q_ptr->currect_anwser+'\n';          
+                
+            }
+            else //its descriptive
+            {
+               descriptive_question* d_q_ptr=((descriptive_question*)(e_ptr->questions[i].t_Or_d_question));
+               out_string+=d_q_ptr->string_answer+'\n';
+            }            
+        }
+        
+        
+      }
       //exam resaults
 
 
@@ -300,8 +355,7 @@ public:
         if (!is_first)
         {
             questions.push(new question());
-        }
-        
+        }        
         switch (input)
         {
         case 'c':
@@ -453,7 +507,6 @@ public:
  };
 }
 
-//void read_file(std::string path);
 class person
 {
 public:
@@ -495,6 +548,24 @@ namespace g_V
 int number_of_s_lists=0;    
 int number_of_exams=0;
 void* loaded_exam=nullptr;
+void* loaded_s_l=nullptr;
+void show_loaed_s_l()
+{
+    ///
+}
+void edit_loaded_s_l()
+{
+     ///
+    //potantioly save that student_list back to the given file name
+     //  if (/* condition */)
+      // {
+        save_loaded_s_l();
+    //   }
+}
+void save_loaded_s_l()
+{
+    ///
+}
 void show_loaded_exam()
 {
     ///
@@ -511,7 +582,7 @@ void edit_loaded_exam()
 }
 void save_loaded_exam()
 {
-    ////
+    ///
 }
 std::string* exam_names=nullptr;
 };
@@ -738,13 +809,16 @@ void enter_dashboard(bool is_teacher, person* _persone)
                  break;
                 }                
                 //load that specific list 
-
+                {
+                    std::string file_name="student_list"+std::to_string(other_input);
+                    std::string _path="./student_lists/";
+                    void* _ptr=g_V::loaded_s_l;
+                    handle_file(bp::save_load_funcs::students_list_load,file_name,bp::save_load_state::load,_path,bp::delete_old_f_state::dont_delete,_ptr);
+                }
                 //show that list
-
+                g_V::show_loaed_s_l();
                 //let the user edit that list
-
-                //potantioly save that list back to the file that it came from
-
+                g_V::edit_loaded_s_l();
                 break;
             default:
                 std::cout << "invalid command. try again" << std::endl;
@@ -754,7 +828,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
     }
     else //its a student
     {
-
+       ///no nonono
     }
 
 
@@ -806,7 +880,7 @@ if (_read_write_state==bp::save_load_state::load)//read
     							
 	if (!count)		
 	{
-	//	std::cout << "file was empty" << std::endl;
+	//	std::cout<<path << "file was empty" << std::endl;
 		//exit(1);
 	}
     //close flie stream
@@ -834,7 +908,6 @@ else //save
 	_ostream << temp_str << '\n';
 	}
     //close flie stream
-	fb.close();
-    
+	fb.close();    
 }
 }
