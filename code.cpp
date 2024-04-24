@@ -32,6 +32,9 @@ public:
 
     }
 };
+void load_e_n_f();
+void save_e_n_f(bool add_one_first);
+int give_num_e();
 namespace bp
 {   
     enum save_load_funcs
@@ -361,10 +364,18 @@ namespace bp
 
         static void save_new_exam(void* _exam)
         {
-            
-            std::string file_name = ((exam*)_exam)->exam_name;
-            std::string _path = "./exams/";
-            handle_file(bp::save_load_funcs::exam_save, file_name, bp::save_load_state::save, _path, bp::delete_old_f_state::_delete, _exam);
+            //creating the file name
+             //load exam number file
+            load_e_n_f();            
+            //save exam to a new exam file
+            {
+                std::string file_name = "exam" + std::to_string(give_num_e());
+                std::string _path = "./exams/";
+                handle_file(bp::save_load_funcs::exam_save, file_name, bp::save_load_state::save, _path, bp::delete_old_f_state::_delete, _exam);
+            }
+            //now change  and save number of exams file            
+            //save exam number file            
+             save_e_n_f(true);//it also adds 1 to it
         }
         static void  create_new_exam()
         {
@@ -843,6 +854,28 @@ void login_system()
         }
     }
 }
+void load_e_n_f()
+{
+    std::string file_name = "exam_numbers";
+    std::string file_path = "./";
+    void* _ptr = &g_V::number_of_exams;
+    handle_file(bp::save_load_funcs::exam_n_l, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, _ptr);
+}
+int give_num_e()
+{
+    return g_V::number_of_exams;
+}
+void save_e_n_f(bool add_one_first)
+{
+    if (add_one_first)
+    {
+        g_V::number_of_exams++;
+    }
+    std::string file_name = "exam_numbers";
+    std::string file_path = "./";
+    void* _ptr = &g_V::number_of_exams;
+    handle_file(bp::save_load_funcs::exam_n_s, file_name, bp::save_load_state::save, file_path, bp::delete_old_f_state::_delete, _ptr);
+}
 void enter_dashboard(bool is_teacher, person* _persone)
 {
     if (is_teacher)
@@ -881,12 +914,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
             case 2:
                 //exam history                
                 //load exam number file
-            {
-                std::string file_name = "exam_numbers";
-                std::string file_path = "./";
-                void* _ptr = &g_V::number_of_exams;
-                handle_file(bp::save_load_funcs::exam_n_l, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, _ptr);
-            }
+                load_e_n_f();                      
             //load that number of exam names
             {
                 delete g_V::exam_names;
