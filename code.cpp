@@ -56,7 +56,6 @@ namespace bp
             std::cout<<"going back to dashboard"<<std::endl;
                 return;
                 break;
-
                  case 1:
                  //adding more questions          
                  _exam->add_question(false);                
@@ -126,52 +125,61 @@ namespace bp
     namespace file //each function will update a specific file
     {     
      //students list
-     void student_list_f_save(std::ostream _ostream,Array<simple_daneshjo> * _students_list)
-     {        
+     void student_list_f_save(void* ptr_ostream,void* ptr__students_list)
+     {     
+        Array<simple_daneshjo> * _students_list=(Array<simple_daneshjo> *)ptr__students_list;   
+        std::ostream& _ostream=*((std::ostream*)ptr_ostream);
         int size=_students_list->get_size();
         std::string save_string;
        for (int i = 0; i < size; i++)
        {
-        simple_daneshjo temp_daneshjo=_students_list->operator[](i);
-        //_ostream<<temp_daneshjo.user_name<<'\n'<<temp_daneshjo.pass_word<<'\n'<<temp_daneshjo.shomare_daneshjoii<<'\n';
+        simple_daneshjo temp_daneshjo=_students_list->operator[](i);        
         save_string+=temp_daneshjo.user_name+'\n'+temp_daneshjo.pass_word+'\n'+std::to_string( temp_daneshjo.shomare_daneshjoii)+'\n';        
        }
        _ostream<<save_string;
      }   
-     void student_list_f_reaload(std::istream _istream,bool& file_is_empty,Array<simple_daneshjo> * _students_list,int& count)
+     void student_list_f_reaload(void* ptr_istream,void* ptr__students_list)
      {
+         Array<simple_daneshjo> * _students_list=(Array<simple_daneshjo> *)ptr__students_list;
+        std::istream& _istream =*((std::istream*)ptr_istream);
         _students_list->_get_emptyed();
         std::string temp_str;
         while (std::getline(_istream >> std::ws, temp_str))
 	    {
-            simple_daneshjo temp_daneshjo;
-            temp_daneshjo.user_name=temp_str;
-            _istream>>temp_daneshjo.pass_word>>temp_daneshjo.shomare_daneshjoii;            
-            _students_list->push(temp_daneshjo);
-		count++;		
+         simple_daneshjo temp_daneshjo;
+         temp_daneshjo.user_name=temp_str;
+         _istream>>temp_daneshjo.pass_word>>temp_daneshjo.shomare_daneshjoii;            
+         _students_list->push(temp_daneshjo);			
 	    }	        
      }
      //number of student lists
-      void student_list_number_save(std::ostream _ostream,int size)
+      void student_list_number_save(void* ptr_ostream,int size)
       {
+        std::ostream& _ostream=*((std::ostream*)ptr_ostream);
         _ostream<<size;
       }
-      void student_list_number_reload(std::istream _istream,int &size)
+      void student_list_number_reload(void* ptr_istream,void* ptr_size)
       {
+        int &size=*((int*)ptr_size);
+        std::istream& _istream =*((std::istream*)ptr_istream);
         _istream>>size;
       }
       //number of exams
-      void exam_number_save(std::ostream _ostream,int size)
+      void exam_number_save(void* ptr_ostream,int size)
       {
+        std::ostream& _ostream=*((std::ostream*)ptr_ostream);
         _ostream<<size;
       }
-      void exam_number_reload(std::istream _istream,int &size)
+      void exam_number_reload(void* ptr_istream,void* ptr_size)
       {
+        int &size=*((int*)ptr_size);
+        std::istream& _istream =*((std::istream*)ptr_istream);
         _istream>>size;
       }
       //exam
-      void exam_save(std::ostream _ostream,void* _loaded_exam)
+      void exam_save(void* ptr_ostream,void* _loaded_exam)
       {
+        std::ostream& _ostream=*((std::ostream*)ptr_ostream);
         std::string out_string={};
         exam* e_ptr=(exam*)_loaded_exam;
         out_string+=((exam*)_loaded_exam)->exam_name+'\n';
@@ -184,7 +192,26 @@ namespace bp
             {
                 test_question* t_q_ptr=((test_question*)(e_ptr->questions[i].t_Or_d_question));
                 out_string+=t_q_ptr->a+'\n'+t_q_ptr->b+'\n'+t_q_ptr->c+'\n'+t_q_ptr->d+'\n';
-                out_string+=t_q_ptr->currect_anwser+'\n';          
+                char out_char;
+                switch (t_q_ptr->currect_anwser)
+                {
+                case bp::posible_test_awnsers::a:
+                    out_char=='a';
+                    break;
+                    case bp::posible_test_awnsers::b:
+                    out_char=='b';
+                    break;                
+                    case bp::posible_test_awnsers::c:
+                    out_char=='c';
+                    break;                
+                    case bp::posible_test_awnsers::d:
+                    out_char=='d';
+                    break;                                
+                default:
+                    out_char=='b';
+                    break;
+                }
+                out_string+=out_char+'\n';          
                 
             }
             else //its descriptive
@@ -195,8 +222,9 @@ namespace bp
         }
         _ostream<<out_string;
       }
-      void exam_reload(std::istream _istream,void* _loaded_exam)
+      void exam_reload(void* ptr_istream,void* _loaded_exam)
       {
+        std::istream& _istream =*((std::istream*)ptr_istream);
         std::string in_string={};
         exam* e_ptr=(exam*)_loaded_exam;
         std::getline(_istream>>std::ws,in_string);
@@ -211,14 +239,40 @@ namespace bp
             {
                 test_question* t_q_ptr=((test_question*)(e_ptr->questions[i].t_Or_d_question));
                 std::getline(_istream>>std::ws,in_string);
-                t_q_ptr->a+'\n'+t_q_ptr->b+'\n'+t_q_ptr->c+'\n'+t_q_ptr->d+'\n';
-                out_string+=t_q_ptr->currect_anwser+'\n';          
-                
+                t_q_ptr->a=in_string;
+                std::getline(_istream>>std::ws,in_string);
+                t_q_ptr->b=in_string;
+                std::getline(_istream>>std::ws,in_string);
+                t_q_ptr->c=in_string;
+                std::getline(_istream>>std::ws,in_string);
+                t_q_ptr->d=in_string;
+                std::getline(_istream>>std::ws,in_string);
+                if (in_string=="a")
+                {
+                 t_q_ptr->currect_anwser=bp::posible_test_awnsers::a;
+                }
+                else if (in_string=="b")
+                {
+                 t_q_ptr->currect_anwser=bp::posible_test_awnsers::b;
+                }
+                else if (in_string=="c")
+                {
+                 t_q_ptr->currect_anwser=bp::posible_test_awnsers::c;
+                }
+                else if (in_string=="d")
+                {
+                 t_q_ptr->currect_anwser=bp::posible_test_awnsers::d;
+                }
+                else
+                {
+                 t_q_ptr->currect_anwser=bp::posible_test_awnsers::b;
+                }                                                                  
             }
             else //its descriptive
             {
                descriptive_question* d_q_ptr=((descriptive_question*)(e_ptr->questions[i].t_Or_d_question));
-               out_string+=d_q_ptr->string_answer+'\n';
+               std::getline(_istream>>std::ws,in_string);
+               d_q_ptr->string_answer=in_string;
             }            
         }
         
@@ -228,8 +282,10 @@ namespace bp
 
 
       //exam name
-      void exam_name_load(std::istream _istream,std::string& _name)
+      void exam_name_load(void* ptr_istream,void* ptr_name)
       {
+        std::string& _name=*((std::string*)ptr_name);
+        std::istream& _istream =*((std::istream*)ptr_istream);
         _istream>>_name;
       }
 
@@ -506,7 +562,6 @@ public:
     }
  };
 }
-
 class person
 {
 public:
@@ -589,7 +644,6 @@ std::string* exam_names=nullptr;
 //
 void login_system();
 void enter_dashboard(bool is_teacher, person* _persone);
-
 int main()
 {
     //teachers
@@ -630,7 +684,6 @@ int main()
 }
 void login_system()
 {
-
     while (true)
     {
         bool pass_was_correct = false;
@@ -646,7 +699,6 @@ void login_system()
         }
         std::cout << "password:";
         std::cin >> password;
-
         for (int i = 0; i < teachers_size; i++)
         {
             person temp_teacher = teachers->operator[](i);
@@ -655,15 +707,13 @@ void login_system()
                 found_user_name = true;
                 if (temp_teacher.pass_word == password)
                 {                    
-                    pass_was_correct = true;
-                    //log in that account                
+                    pass_was_correct = true;                    
+                    //log in that account 
+                    enter_dashboard(true, &teachers->operator[](i));               
                     break;
                 }
-
             }
-
         }
-
         for (int i = 0; i < students_size; i++)
         {
             person temp_student = students->operator[](i);
@@ -672,7 +722,6 @@ void login_system()
                 found_user_name = true;
                 if (temp_student.pass_word == password)
                 {
-
                     pass_was_correct = true;
                     //log in that account
 
@@ -680,11 +729,8 @@ void login_system()
                     //                
                     break;
                 }
-
             }
-
         }
-
         if (found_user_name)
         {
             if (!pass_was_correct)
@@ -696,7 +742,6 @@ void login_system()
         {
             std::cout << "username not found" << std::endl;
         }
-
     }
 }
 void enter_dashboard(bool is_teacher, person* _persone)
@@ -837,10 +882,8 @@ void enter_dashboard(bool is_teacher, person* _persone)
 void handle_file(bp::save_load_funcs s_l_func,std::string file_name,bp::save_load_state _read_write_state,std::string path="./",bp::delete_old_f_state _delete_old_file=bp::delete_old_f_state::dont_delete,void* _ptr)
 {  
 path += file_name;
-
 if (_read_write_state==bp::save_load_state::load)//read
-{
-	
+{	
 	std::filebuf fb;
 	fb.open(path, std::ios::app | std::ios::in);
 	std::istream _istream(&fb);
@@ -848,42 +891,27 @@ if (_read_write_state==bp::save_load_state::load)//read
 	int count = 0;
     //reading file
 	switch (s_l_func)
-    {
-        //exams
-    case bp::save_load_funcs::exam_save:
-    
-        break;
+    {//load funcs        
     case bp::save_load_funcs::exam_load:
-    
-        break;
-    case bp::save_load_funcs::exam_n_s:
-    
-        break;
-     case bp::save_load_funcs::exam_n_l:
-    //student lists
-        break;
-    case bp::save_load_funcs::students_list_save:
-    //bp::students_list_save()
-        break;
+    bp::file::exam_reload(&_istream,_ptr);
+    break;
+    case bp::save_load_funcs::exam_n_l:
+    bp::file::exam_number_reload(&_istream,_ptr);
+    break; 
+    case bp::save_load_funcs::load_exam_name:    
+    bp::file::exam_name_load(&_istream,_ptr);
+    break; 
     case bp::save_load_funcs::students_list_load:
-    
-        break;
-    case bp::save_load_funcs::students_list_n_s:
-    
-        break; 
+    bp::file::student_list_f_reaload(&_istream,_ptr);    
+    break;
     case bp::save_load_funcs::students_list_n_l:
-    //
-        break;             
+    bp::file::student_list_number_reload(&_istream,_ptr);
+    break;;                 
     default:
+        std::cout<<"error: invalid file state"<<std::endl;
+        exit(1);
         break;
-    }
-    							
-	if (!count)		
-	{
-	//	std::cout<<path << "file was empty" << std::endl;
-		//exit(1);
-	}
-    //close flie stream
+    }    
     fb.close();	
 }
 else //save
@@ -898,15 +926,28 @@ else //save
     else //dont delete old file
     {
     fb.open(path,std::ios::app | std::ios::out);
-    }	
+    }
+    std::ostream _ostream(&fb);
     //wrting to file
-	std::ostream _ostream(&fb);			
-	for (int i = 0; i < n; i++)
-	{
-	std::string temp_str;
-	std::getline(std::cin >> std::ws, temp_str);
-	_ostream << temp_str << '\n';
-	}
+	switch (s_l_func)
+    {//save funcs
+    case bp::save_load_funcs::exam_n_s:
+     bp::file::exam_number_save(&_ostream,*(int*)_ptr);
+     break;
+    case bp::save_load_funcs::exam_save:
+     bp::file::exam_save(&_ostream,_ptr);
+     break;
+    case bp::save_load_funcs::students_list_n_s:
+     bp::file::student_list_number_save(&_ostream,*(int*)_ptr);
+     break;
+    case bp::save_load_funcs::students_list_save:
+    bp::file::student_list_f_save(&_ostream,_ptr);
+    break;        
+    default:
+     std::cout<<"error: invalid file state"<<std::endl;
+     exit(1);
+     break;
+    }
     //close flie stream
 	fb.close();    
 }
