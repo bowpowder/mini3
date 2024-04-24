@@ -576,6 +576,7 @@ namespace bp
                 _istream >> e_ptr->questions[i].time >> e_ptr->questions[i].score;                
                 if (e_ptr->questions[i].is_test)//its a test
                 {
+                    e_ptr->questions[i].change_to_test();
                     test_question* t_q_ptr = ((test_question*)(e_ptr->questions[i].t_Or_d_question));
                     std::getline(_istream >> std::ws, in_string);
                     t_q_ptr->a = in_string;
@@ -609,6 +610,7 @@ namespace bp
                 }
                 else //its descriptive
                 {
+                    e_ptr->questions[i].change_to_descriptive();
                     descriptive_question* d_q_ptr = ((descriptive_question*)(e_ptr->questions[i].t_Or_d_question));
                     std::getline(_istream >> std::ws, in_string);
                     d_q_ptr->string_answer = in_string;
@@ -712,7 +714,70 @@ namespace g_V
     int number_of_exams = 0;
     void* loaded_exam = nullptr;
     void* loaded_s_l = nullptr;
-    void show_loaed_s_l()
+    void show_loaded_exam(bool teacher_view = true)
+    {
+        if (loaded_exam)//an exam is loaded
+        {
+            bp::exam* e_ptr = (bp::exam*)loaded_exam;
+            int exam_size = e_ptr->number_of_questions();
+            std::cout << e_ptr->exam_name << std::endl;
+            for (int i = 0; i < exam_size; i++)
+            {
+                std::cout << "question " << i << ':' << std:: endl;
+                std::cout << "-----------------------------------------------" << std::endl;
+                std::cout << e_ptr->questions[i].question_str << std::endl;
+                std::cout << "max time :" << e_ptr->questions[i].time << std::endl;
+                std::cout << "score :" << e_ptr->questions[i].score << std::endl;
+                if (e_ptr->questions[i].is_test)///its test
+                {
+                    bp::test_question* t_ptr = (bp::test_question*)e_ptr->questions[i].t_Or_d_question;
+                    std::cout << "option a:" << t_ptr->a << std::endl;
+                    std::cout << "option b:" << t_ptr->b << std::endl;
+                    std::cout << "option c:" << t_ptr->c << std::endl;
+                    std::cout << "option d:" << t_ptr->d << std::endl;
+                    if (teacher_view)
+                    {
+                        char c_a;
+                        switch (t_ptr->currect_anwser)
+                        {
+                        case bp::posible_test_awnsers::a:
+                            c_a = 'a';
+                            break;
+                        case bp::posible_test_awnsers::b:
+                            c_a = 'b';
+                            break;
+                        case bp::posible_test_awnsers::c:
+                            c_a = 'c';
+                            break;
+                        case bp::posible_test_awnsers::d:
+                            c_a = 'd';
+                            break;
+                        default:
+                            c_a = 'b';
+                            break;
+                        }
+                        std::cout << "currect awnser :" << c_a << std::endl;
+                    }                    
+                }
+                else//its descriptive
+                {
+                    bp::descriptive_question* d_ptr = (bp::descriptive_question*)e_ptr->questions[i].t_Or_d_question;
+                    if (teacher_view)
+                    {
+                        std::cout << "currect awnser :" << d_ptr->string_answer << std::endl;
+                    }
+                }
+                std::cout << "-----------------------------------------------" << std::endl;
+            }             
+            std::cout <<std::endl<<std::endl;
+        }
+        else // its nullptr and not loaded
+        {
+            std::cout << "no exam is loaded" << std::endl;
+        }
+       
+    }
+    void show_loaded_s_l()
     {
         ///
     }
@@ -728,12 +793,7 @@ namespace g_V
          // {
         save_loaded_s_l();
         //   }
-    }
-    
-    void show_loaded_exam()
-    {
-        ///
-    }
+    }    
      void save_loaded_exam()
     {
         ///
@@ -990,7 +1050,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
                 handle_file(bp::save_load_funcs::students_list_load, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete, _ptr);
             }
             //show that list
-            g_V::show_loaed_s_l();
+            g_V::show_loaded_s_l();
             //let the user edit that list
             g_V::edit_loaded_s_l();
             break;
