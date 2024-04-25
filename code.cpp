@@ -35,6 +35,7 @@ public:
 void load_e_n_f();
 void save_e_n_f(bool add_one_first);
 int give_num_e();
+void* clear_loaded_exam();
 namespace bp
 {   
     enum save_load_funcs
@@ -71,10 +72,32 @@ namespace bp
             delete[] heap_alocated_array;
             heap_alocated_array = new T[max_size];
         }
-
+        void _get_super_emptyed()
+        {
+            if (heap_alocated_array&& this)
+            {
+                delete[] heap_alocated_array;
+            }          
+           
+            heap_alocated_array = new T[1];
+        }         
         void push(T value)
         {
-            if (max_size <= size)
+            safe_resize();
+            heap_alocated_array[size] = value;
+            size++;
+        }
+        T* get_array()
+        {
+            return heap_alocated_array;
+        }
+        void safe_resize(bool increase_size=false)
+        {
+         if (increase_size)
+          {
+           size++;
+          }            
+         if (max_size <= size)
             {
                 //resize
                 T* temp = new T[max_size * 2];
@@ -86,12 +109,6 @@ namespace bp
                 delete[] heap_alocated_array;
                 heap_alocated_array = temp;
             }
-            heap_alocated_array[size] = value;
-            size++;
-        }
-        T* get_array()
-        {
-            return heap_alocated_array;
         }
         int get_size()
         {
@@ -555,14 +572,17 @@ namespace bp
         {
             std::istream& _istream = *((std::istream*)ptr_istream);
             std::string in_string = {};            
-            exam* e_ptr = (exam*)_loaded_exam;                      
+            exam* e_ptr = (exam*)(clear_loaded_exam());                        
             std::getline(_istream >> std::ws, in_string);
-            e_ptr->exam_name = in_string;
-            int exam_size = e_ptr->number_of_questions();
-            int i = 0;
-            for (; i < exam_size; i++)
-            {
-                std::getline(_istream >> std::ws, in_string);
+            e_ptr->exam_name = in_string;                     
+            int i=0;
+            e_ptr->questions._get_super_emptyed();
+            while (std::getline(_istream >> std::ws, in_string) )
+            {                
+                if (i!=0)               
+                {                    
+                    e_ptr->questions.safe_resize();
+                }                                                                       
                 e_ptr->questions[i].question_str = in_string;                
                 std::getline(_istream >> std::ws, in_string);
                 if (in_string=="true")
@@ -615,7 +635,10 @@ namespace bp
                     std::getline(_istream >> std::ws, in_string);
                     d_q_ptr->string_answer = in_string;
                 }
+                i++;
             }
+            
+            
             
 
 
@@ -714,6 +737,7 @@ namespace g_V
     int number_of_exams = 0;
     void* loaded_exam = nullptr;
     void* loaded_s_l = nullptr;
+    
     void show_loaded_exam(bool teacher_view = true)
     {
         if (loaded_exam)//an exam is loaded
@@ -769,7 +793,7 @@ namespace g_V
                 }
                 std::cout << "-----------------------------------------------" << std::endl;
             }             
-            std::cout <<std::endl<<std::endl;
+            std::cout << std::endl << std::endl;
         }
         else // its nullptr and not loaded
         {
@@ -812,6 +836,15 @@ namespace g_V
     std::string* exam_names = nullptr;
 };
 //
+void* clear_loaded_exam()
+    {
+        if (g_V::loaded_exam)
+        {
+           delete g_V::loaded_exam;
+        }                
+        g_V::loaded_exam=new bp::exam;
+        return g_V::loaded_exam;
+    }
 void login_system();
 void enter_dashboard(bool is_teacher, person* _persone);
 int main()
@@ -986,7 +1019,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
                     std::string file_name = "exam";
                     file_name += std::to_string(i);
                     std::string _path = "./exams/";
-                    handle_file(bp::save_load_funcs::exam_load, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete, _ptr);
+                    handle_file(bp::save_load_funcs::load_exam_name, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete, _ptr);
                     g_V::exam_names[i] = _exam_name;
                 }
             }
@@ -1011,7 +1044,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
                 std::string file_name = "exam" + std::to_string(other_input);
                 std::string file_path = "./exams/";
                 delete g_V::loaded_exam;
-                g_V::loaded_exam = (void*)(new bp::exam);
+                g_V::loaded_exam = new bp::exam(1);
                 handle_file(bp::save_load_funcs::exam_load, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, g_V::loaded_exam);
             }
             //show show that exam to the user
