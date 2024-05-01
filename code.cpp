@@ -38,6 +38,22 @@ int give_num_e();
 void* clear_loaded_exam();
 namespace bp
 {   
+    class student_list
+    {
+    private:
+        void* _array=nullptr;
+    public:
+    
+        student_list(int _size)
+        {
+
+        }
+        ~student_list()
+        {
+
+        }
+    };
+    
     enum save_load_funcs
     {
         students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name
