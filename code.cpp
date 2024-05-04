@@ -1,6 +1,7 @@
 #include <iostream>
 #include<string>
 #include<fstream>  
+#include<sstream>
 class person
 {
 public:
@@ -36,24 +37,10 @@ void load_e_n_f();
 void save_e_n_f(bool add_one_first);
 int give_num_e();
 void* clear_loaded_exam();
+
 namespace bp
 {   
-    class student_list
-    {
-    private:
-        void* _array=nullptr;
-    public:
-    
-        student_list(int _size)
-        {
-
-        }
-        ~student_list()
-        {
-
-        }
-    };
-    
+       
     enum save_load_funcs
     {
         students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name
@@ -139,6 +126,7 @@ namespace bp
             delete[] heap_alocated_array;
         }
     };
+    void set_loaded_s_l(bp::Array<int>& temp_s_list);
     class test_question
     {
     public:
@@ -478,30 +466,39 @@ namespace bp
         //students list
         void student_list_f_save(void* ptr_ostream, void* ptr__students_list)
         {
-            Array<simple_daneshjo>* _students_list = (Array<simple_daneshjo> *)ptr__students_list;
+            
             std::ostream& _ostream = *((std::ostream*)ptr_ostream);
-            int size = _students_list->get_size();
-            std::string save_string;
+            bp::Array<int> *_student_list=(bp::Array<int> *) ptr__students_list;
+            int size = _student_list->get_size();
+            std::string out_string={};
             for (int i = 0; i < size; i++)
             {
-                simple_daneshjo temp_daneshjo = _students_list->operator[](i);
-                save_string += temp_daneshjo.user_name + '\n' + temp_daneshjo.pass_word + '\n' + std::to_string(temp_daneshjo.shomare_daneshjoii) + '\n';
+                out_string+=std::to_string(_student_list->operator[](i))+='\n';                
             }
-            _ostream << save_string;
+            _ostream << out_string;
         }
         void student_list_f_reaload(void* ptr_istream, void* ptr__students_list)
         {
-            Array<simple_daneshjo>* _students_list = (Array<simple_daneshjo> *)ptr__students_list;
-            std::istream& _istream = *((std::istream*)ptr_istream);
-            _students_list->_get_emptyed();
-            std::string temp_str;
+            bp::Array<int>* temp_s_list=new bp::Array<int>(1);
+            std::istream& _istream = *((std::istream*)ptr_istream);          
+            std::string temp_str={};
+            bool is_first_sho_da=true;
             while (std::getline(_istream >> std::ws, temp_str))
-            {
-                simple_daneshjo temp_daneshjo;
-                temp_daneshjo.user_name = temp_str;
-                _istream >> temp_daneshjo.pass_word >> temp_daneshjo.shomare_daneshjoii;
-                _students_list->push(temp_daneshjo);
+            {                
+               std::stringstream ss(temp_str);
+               int input;
+               ss>>input;
+               if (is_first_sho_da)
+               {
+                temp_s_list->operator[](0)=input;
+                is_first_sho_da=false;
+               }
+               else
+               {
+                temp_s_list->push(input);
+               }               
             }
+           set_loaded_s_l(*temp_s_list);
         }
         //number of student lists
         void student_list_number_save(void* ptr_ostream, int size)
@@ -753,6 +750,74 @@ namespace g_V
     int number_of_exams = 0;
     void* loaded_exam = nullptr;
     void* loaded_s_l = nullptr;
+    void add_new_sho_da(bp::Array<int> &_sho_d_ha,int value,bool first_Q=false)
+    {
+     if (first_Q)
+     {
+        _sho_d_ha[0]=value;
+     }
+     else
+     {
+        _sho_d_ha.push(value);
+     }
+     
+    }
+    void creat_n_s_l()
+    {
+        bp::Array<int> sho_d_ha(1);
+        bool keep_looping=true;
+        {//scooped
+            std::cout<<"add fisrt student "<<std::endl;
+            int fisrt_value;
+            std::cin>>fisrt_value;
+            add_new_sho_da(sho_d_ha,fisrt_value,true);
+        }        
+        while (keep_looping)
+        {
+            
+            std::cout<<"1: add one more student"<<std::endl;
+            std::cout<<"0: save student list"<<std::endl;
+            int input;
+            std::cin>>input;
+            int other_input;
+            if (input==1)
+            {
+                std::cout<<"adding one more student"<<std::endl;
+            //add student
+            std::cin>>other_input;
+            add_new_sho_da(sho_d_ha,other_input);
+            }
+            else
+            {
+                 std::cout<<"saving this student list"<<std::endl;
+            //save
+            //find current name for the file
+               //load student lists number file
+            {
+                std::string file_name = "student_lists_number";
+                std::string path = "./";
+                void* _Ptr = &g_V::number_of_s_lists;
+                handle_file(bp::save_load_funcs::students_list_n_l, file_name, bp::save_load_state::load, path, bp::delete_old_f_state::dont_delete, _Ptr);
+            }
+            //save student list
+            {
+                std::string name=std::to_string(g_V::number_of_s_lists);
+                std::string file_path="./student_lists/";
+                bp::handle_file(bp::save_load_funcs::students_list_save,name,bp::save_load_state::save,file_path,bp::delete_old_f_state::_delete,&sho_d_ha);
+            }
+            //update and save the number of student lists
+            {
+                g_V::number_of_s_lists++;
+                std::string file_name = "student_lists_number";
+                std::string path = "./";
+                void* _Ptr = &g_V::number_of_s_lists;
+                handle_file(bp::save_load_funcs::students_list_n_s, file_name, bp::save_load_state::save, path, bp::delete_old_f_state::dont_delete, _Ptr);
+            }            
+            keep_looping=false;
+            }                      
+        }
+        
+    }
     
     void show_loaded_exam(bool teacher_view = true)
     {
@@ -819,7 +884,13 @@ namespace g_V
     }
     void show_loaded_s_l()
     {
-        ///
+      bp::Array<int>* ptr=(bp::Array<int>*)g_V::loaded_s_l;
+      int size=ptr->get_size();
+      for (int i = 0; i < size; i++)
+      {
+        std::cout<<"student"<<i<<": "<<ptr->operator[](i)<<std::endl;
+      }
+        
     }
     void save_loaded_s_l()
     {
@@ -852,6 +923,11 @@ namespace g_V
     std::string* exam_names = nullptr;
 };
 //
+void bp::set_loaded_s_l(bp::Array<int>& temp_s_list)
+{
+   delete g_V::loaded_s_l;
+   g_V::loaded_s_l=(void*)(new bp::Array<int>(temp_s_list));
+}
 void* clear_loaded_exam()
     {
         if (g_V::loaded_exam)
@@ -997,7 +1073,8 @@ void enter_dashboard(bool is_teacher, person* _persone)
             std::cout << "1 : creat a new exam" << '\n';
             std::cout << "2 : exam history" << '\n';
             std::cout << "3 : student lists" << '\n';
-            std::cout << "2 : exam resualts" << std::endl;
+            std::cout << "4 : exam resualts" << std::endl;
+            std::cout << "5 : create new student list" << std::endl;
             int command;
             std::cin >> command;
             int other_input;
@@ -1082,7 +1159,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
             std::cout << "student lists:" << std::endl;
             for (int i = 0; i < g_V::number_of_s_lists; i++)
             {
-                std::cout << i << " :" << "studentlist" << i;
+                std::cout << i << " :" << "studentlist " << i;
             }
             //let the user choose which one they what to load            
             std::cin >> other_input;
@@ -1093,7 +1170,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
             }
             //load that specific list 
             {
-                std::string file_name = "student_list" + std::to_string(other_input);
+                std::string file_name = std::to_string(other_input);
                 std::string _path = "./student_lists/";
                 void* _ptr = g_V::loaded_s_l;
                 handle_file(bp::save_load_funcs::students_list_load, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete, _ptr);
@@ -1102,6 +1179,9 @@ void enter_dashboard(bool is_teacher, person* _persone)
             g_V::show_loaded_s_l();
             //let the user edit that list
             g_V::edit_loaded_s_l();
+            break;
+            case 5:
+            g_V::creat_n_s_l();
             break;
             default:
                 std::cout << "invalid command. try again" << std::endl;
