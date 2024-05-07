@@ -209,12 +209,13 @@ namespace bp
     class exam
     {
     public:
+        int exam_index;
         std::string exam_name;
         int total_score, total_time;
         Array<question> questions;
     public:
-        exam(int _number_of_questions = 1, std::string _exam_name = {}, int _total_score = 0, int _total_time = 0)
-            :questions(_number_of_questions), total_score(_total_score), total_time(_total_time), exam_name(_exam_name)
+        exam(int _number_of_questions = 1, std::string _exam_name = {}, int _total_score = 0, int _total_time = 0,int _exam_index=-1)
+            :questions(_number_of_questions), total_score(_total_score), total_time(_total_time), exam_name(_exam_name),exam_index(_exam_index)
         {
 
         }
@@ -419,6 +420,9 @@ namespace bp
                 case 1://creating an examp obj and adding first question
                     //creating an exam obj
                     _exam = new exam(1, exam_name);
+                    //setting student list exam
+                    std::cout<<"enter associated student list index"<<std::endl;
+                    std::cin>>_exam->exam_index;
                     //adding first question
                     _exam->add_question(true);
                     break;
@@ -531,6 +535,9 @@ namespace bp
             std::string out_string = {};
             exam* e_ptr = (exam*)_loaded_exam;
             out_string += ((exam*)_loaded_exam)->exam_name + '\n';
+            //adding exam student list index
+            out_string+=std::to_string(e_ptr->exam_index);
+            // 
             int exam_size = e_ptr->number_of_questions();
             for (int i = 0; i < exam_size; i++)
             {
@@ -587,7 +594,10 @@ namespace bp
             std::string in_string = {};            
             exam* e_ptr = (exam*)(clear_loaded_exam());                        
             std::getline(_istream >> std::ws, in_string);
-            e_ptr->exam_name = in_string;                     
+            e_ptr->exam_name = in_string;
+            //getting exam student list index
+            _istream>>e_ptr->exam_index;
+            //                   
             int i=0;
             e_ptr->questions._get_super_emptyed();
             while (std::getline(_istream >> std::ws, in_string) )
@@ -826,6 +836,7 @@ namespace g_V
             bp::exam* e_ptr = (bp::exam*)loaded_exam;
             int exam_size = e_ptr->number_of_questions();
             std::cout << e_ptr->exam_name << std::endl;
+            std::cout<<"student list:"<<e_ptr->exam_index<<std::endl;
             for (int i = 0; i < exam_size; i++)
             {
                 std::cout << "question " << i << ':' << std:: endl;
