@@ -2,6 +2,7 @@
 #include<string>
 #include<fstream>  
 #include<sstream>
+#include<vector>
 class person
 {
 public:
@@ -39,8 +40,8 @@ int give_num_e();
 void* clear_loaded_exam();
 
 namespace bp
-{   
-       
+{
+
     enum save_load_funcs
     {
         students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name
@@ -57,7 +58,7 @@ namespace bp
     {
         a, b, c, d
     };
-    void handle_file(bp::save_load_funcs , std::string , bp::save_load_state, std::string , bp::delete_old_f_state , void* _ptr);
+    void handle_file(bp::save_load_funcs, std::string, bp::save_load_state, std::string, bp::delete_old_f_state, void* _ptr);
     template<class T>
     class Array
     {
@@ -72,18 +73,21 @@ namespace bp
         }
         void _get_emptyed()
         {
-            delete[] heap_alocated_array;
+            if (heap_alocated_array)
+            {
+                operator delete[](heap_alocated_array);
+            }            
             heap_alocated_array = new T[max_size];
         }
         void _get_super_emptyed()
         {
-            if (heap_alocated_array&& this)
+            if (heap_alocated_array && this)
             {
-                delete[] heap_alocated_array;
-            }          
-           
+                operator delete[](heap_alocated_array);
+            }
+
             heap_alocated_array = new T[1];
-        }         
+        }
         void push(T value)
         {
             safe_resize();
@@ -94,13 +98,13 @@ namespace bp
         {
             return heap_alocated_array;
         }
-        void safe_resize(bool increase_size=false)
+        void safe_resize(bool increase_size = false)
         {
-         if (increase_size)
-          {
-           size++;
-          }            
-         if (max_size <= size)
+            if (increase_size)
+            {
+                size++;
+            }
+            if (max_size <= size)
             {
                 //resize
                 T* temp = new T[max_size * 2];
@@ -109,7 +113,11 @@ namespace bp
                 {
                     temp[i] = heap_alocated_array[i];
                 }
-                delete[] heap_alocated_array;
+
+                if (heap_alocated_array)
+                {
+                    delete []heap_alocated_array;
+                }                
                 heap_alocated_array = temp;
             }
         }
@@ -123,87 +131,40 @@ namespace bp
         }
         ~Array()
         {
-            delete[] heap_alocated_array;
+            if (heap_alocated_array)
+            {
+                delete[] heap_alocated_array;
+            }            
         }
     };
-    void set_loaded_s_l(bp::Array<int>& temp_s_list);
-    class test_question
-    {
-    public:
-        posible_test_awnsers currect_anwser;
-        std::string a, b, c, d;
-    public:
-        test_question(std::string option_a = {}, std::string option_b = {}, std::string option_c = {}, std::string option_d = {}, posible_test_awnsers _currect_anwser = posible_test_awnsers::a) :a(option_a), b(option_b), c(option_c), d(option_d), currect_anwser(_currect_anwser)
-        {
-
-        }
-        ~test_question()
-        {
-
-        }
-    };
-    class descriptive_question
-    {
-    public:
-        std::string string_answer;
-    public:
-        descriptive_question(std::string _string_anwser = {}) : string_answer(_string_anwser)
-        {
-
-        }
-        ~descriptive_question()
-        {
-
-        }
-    };
+    void set_loaded_s_l(bp::Array<int>& temp_s_list);   
     class question
     {
     public:
         bool is_test = false;
         double score, time;
         std::string question_str;
-        void* t_Or_d_question;
+        /// <summary>
+        /// test stuf
+        posible_test_awnsers currect_anwser;
+        std::string a, b, c, d;
+        /// </summary>        
+        std::string string_answer;
 
     public:
-        question(bool _is_test = true, int _score = 0, int _time = 0, std::string _question_str = {}) :is_test(_is_test), score(_score), time(_time), question_str(_question_str), t_Or_d_question(nullptr)
-        {
-            if (is_test)
-            {
-                t_Or_d_question = new test_question();
-            }
-            else
-            {
-                t_Or_d_question = new descriptive_question();
-            }
-
+        question(bool _is_test = true, int _score = 0, int _time = 0, std::string _question_str = {}) :is_test(_is_test), score(_score), time(_time), question_str(_question_str)
+        {          
         }
         ~question()
         {
-            if (is_test)
-            {
-                test_question* test_ptr = (test_question*)t_Or_d_question;
-                delete test_ptr;
-                test_ptr = nullptr;
-            }
-            else
-            {
-                descriptive_question* des_ptr = (descriptive_question*)t_Or_d_question;
-                delete des_ptr;
-                des_ptr = nullptr;
-            }
-            t_Or_d_question = nullptr;
         }
         void change_to_test()
-        {
-            is_test = true;
-            delete t_Or_d_question;
-            t_Or_d_question =new test_question;
+        {          
+            is_test = true;           
         }
         void change_to_descriptive()
-        {
-            is_test = false;
-            delete t_Or_d_question;
-            t_Or_d_question = new descriptive_question;
+        {          
+            is_test = false;         
         }
     };
     class exam
@@ -212,10 +173,10 @@ namespace bp
         int exam_index;
         std::string exam_name;
         int total_score, total_time;
-        Array<question> questions;
+        std::vector<question> questions;
     public:
-        exam(int _number_of_questions = 1, std::string _exam_name = {}, int _total_score = 0, int _total_time = 0,int _exam_index=-1)
-            :questions(_number_of_questions), total_score(_total_score), total_time(_total_time), exam_name(_exam_name),exam_index(_exam_index)
+        exam(int _number_of_questions = 1, std::string _exam_name = {}, int _total_score = 0, int _total_time = 0, int _exam_index = -1)
+            :questions(_number_of_questions), total_score(_total_score), total_time(_total_time), exam_name(_exam_name), exam_index(_exam_index)
         {
 
         }
@@ -229,11 +190,12 @@ namespace bp
             char input;
             std::cout << "c : cancel" << std::endl;
             std::cout << "is it test?(y/n)" << std::endl;
-            std::cin >> input;
-            int old_size = questions.get_size();
+            std::cin >> input;            
+            question* temp_q = nullptr;
             if (!is_first)
             {
-                questions.push(new question());
+                temp_q = new question();
+                //questions.push(*q);
             }
             switch (input)
             {
@@ -249,7 +211,7 @@ namespace bp
                 }
                 else
                 {
-                    questions[old_size].change_to_test();
+                    temp_q->change_to_test();
                 }
                 break;
             case 'n':
@@ -260,7 +222,7 @@ namespace bp
                 }
                 else
                 {
-                    questions[old_size].change_to_descriptive();
+                    temp_q->change_to_descriptive();
                 }
                 break;
 
@@ -331,40 +293,37 @@ namespace bp
                 questions[0].score = temp_score;
                 if (is_test)
                 {
-                    test_question* t_ptr = (test_question*)questions[0].t_Or_d_question;
-                    t_ptr->a = test_options[0];
-                    t_ptr->b = test_options[1];
-                    t_ptr->c = test_options[2];
-                    t_ptr->d = test_options[3];
-                    t_ptr->currect_anwser = currect_test_anwser;
+                    questions[0].a = test_options[0];
+                    questions[0].b = test_options[1];
+                    questions[0].c = test_options[2];
+                    questions[0].d = test_options[3];
+                    questions[0].currect_anwser = currect_test_anwser;
                 }
                 else
-                {
-                    descriptive_question* d_ptr = (descriptive_question*)questions[0].t_Or_d_question;
-                    d_ptr->string_answer = descriptive_answer;
+                {                   
+                    questions[0].string_answer = descriptive_answer;
                 }
 
 
             }
             else
             {
-                questions[old_size].question_str = temp_str;
-                questions[old_size].time = temp_time;
-                questions[old_size].score = temp_score;
+                temp_q->question_str = temp_str;
+                temp_q->time = temp_time;
+                temp_q->score = temp_score;
                 if (is_test)
-                {
-                    test_question* t_ptr = (test_question*)questions[old_size].t_Or_d_question;
-                    t_ptr->a = test_options[0];
-                    t_ptr->b = test_options[1];
-                    t_ptr->c = test_options[2];
-                    t_ptr->d = test_options[3];
-                    t_ptr->currect_anwser = currect_test_anwser;
+                {                   
+                    temp_q->a = test_options[0];
+                    temp_q->b = test_options[1];
+                    temp_q->c = test_options[2];
+                    temp_q->d = test_options[3];
+                    temp_q->currect_anwser = currect_test_anwser;
                 }
                 else
-                {
-                    descriptive_question* d_ptr = (descriptive_question*)questions[old_size].t_Or_d_question;
-                    d_ptr->string_answer = descriptive_answer;
+                {                    
+                    temp_q->string_answer = descriptive_answer;
                 }
+                questions.push_back(*temp_q);
             }
             std::cout << "question was added successfully" << std::endl;
             return;
@@ -381,14 +340,14 @@ namespace bp
         }
         int number_of_questions()
         {
-            return questions.get_size();
+            return questions.size();
         }
 
         static void save_new_exam(void* _exam)
         {
             //creating the file name
              //load exam number file
-            load_e_n_f();            
+            load_e_n_f();
             //save exam to a new exam file
             {
                 std::string file_name = "exam" + std::to_string(give_num_e());
@@ -397,7 +356,7 @@ namespace bp
             }
             //now change  and save number of exams file            
             //save exam number file            
-             save_e_n_f(true);//it also adds 1 to it
+            save_e_n_f(true);//it also adds 1 to it
         }
         static void  create_new_exam()
         {
@@ -421,8 +380,8 @@ namespace bp
                     //creating an exam obj
                     _exam = new exam(1, exam_name);
                     //setting student list exam
-                    std::cout<<"enter associated student list index"<<std::endl;
-                    std::cin>>_exam->exam_index;
+                    std::cout << "enter associated student list index" << std::endl;
+                    std::cin >> _exam->exam_index;
                     //adding first question
                     _exam->add_question(true);
                     break;
@@ -464,45 +423,45 @@ namespace bp
             }
         }
     };
-    
+
     namespace file //each function will update a specific file
     {
         //students list
         void student_list_f_save(void* ptr_ostream, void* ptr__students_list)
         {
-            
+
             std::ostream& _ostream = *((std::ostream*)ptr_ostream);
-            bp::Array<int> *_student_list=(bp::Array<int> *) ptr__students_list;
+            bp::Array<int>* _student_list = (bp::Array<int> *) ptr__students_list;
             int size = _student_list->get_size();
-            std::string out_string={};
+            std::string out_string = {};
             for (int i = 0; i < size; i++)
             {
-                out_string+=std::to_string(_student_list->operator[](i))+='\n';                
+                out_string += std::to_string(_student_list->operator[](i)) += '\n';
             }
             _ostream << out_string;
         }
         void student_list_f_reaload(void* ptr_istream, void* ptr__students_list)
         {
-            bp::Array<int>* temp_s_list=new bp::Array<int>(1);
-            std::istream& _istream = *((std::istream*)ptr_istream);          
-            std::string temp_str={};
-            bool is_first_sho_da=true;
+            bp::Array<int>* temp_s_list = new bp::Array<int>(1);
+            std::istream& _istream = *((std::istream*)ptr_istream);
+            std::string temp_str = {};
+            bool is_first_sho_da = true;
             while (std::getline(_istream >> std::ws, temp_str))
-            {                
-               std::stringstream ss(temp_str);
-               int input;
-               ss>>input;
-               if (is_first_sho_da)
-               {
-                temp_s_list->operator[](0)=input;
-                is_first_sho_da=false;
-               }
-               else
-               {
-                temp_s_list->push(input);
-               }               
+            {
+                std::stringstream ss(temp_str);
+                int input;
+                ss >> input;
+                if (is_first_sho_da)
+                {
+                    temp_s_list->operator[](0) = input;
+                    is_first_sho_da = false;
+                }
+                else
+                {
+                    temp_s_list->push(input);
+                }
             }
-           set_loaded_s_l(*temp_s_list);
+            set_loaded_s_l(*temp_s_list);
         }
         //number of student lists
         void student_list_number_save(void* ptr_ostream, int size)
@@ -536,7 +495,7 @@ namespace bp
             exam* e_ptr = (exam*)_loaded_exam;
             out_string += ((exam*)_loaded_exam)->exam_name + '\n';
             //adding exam student list index
-            out_string+=std::to_string(e_ptr->exam_index);
+            out_string += std::to_string(e_ptr->exam_index);
             // 
             int exam_size = e_ptr->number_of_questions();
             for (int i = 0; i < exam_size; i++)
@@ -555,10 +514,10 @@ namespace bp
                 out_string += std::to_string(e_ptr->questions[i].score) + '\n';
                 if (e_ptr->questions[i].is_test)//its a test
                 {
-                    test_question* t_q_ptr = ((test_question*)(e_ptr->questions[i].t_Or_d_question));
-                    out_string += t_q_ptr->a + '\n' + t_q_ptr->b + '\n' + t_q_ptr->c + '\n' + t_q_ptr->d + '\n';
+                    
+                    out_string += e_ptr->questions[i].a + '\n' + e_ptr->questions[i].b + '\n' + e_ptr->questions[i].c + '\n' + e_ptr->questions[i].d + '\n';
                     std::string out_char = {};
-                    switch (t_q_ptr->currect_anwser)
+                    switch (e_ptr->questions[i].currect_anwser)
                     {
                     case bp::posible_test_awnsers::a:
                         out_char = "a";
@@ -577,13 +536,12 @@ namespace bp
                         break;
                     }
                     out_string += out_char;
-                    out_string +='\n';
+                    out_string += '\n';
 
                 }
                 else //its descriptive
-                {
-                    descriptive_question* d_q_ptr = ((descriptive_question*)(e_ptr->questions[i].t_Or_d_question));
-                    out_string += d_q_ptr->string_answer + '\n';
+                {                    
+                    out_string += e_ptr->questions[i].string_answer + '\n';
                 }
             }
             _ostream << out_string;
@@ -591,78 +549,83 @@ namespace bp
         void exam_reload(void* ptr_istream, void* _loaded_exam)
         {
             std::istream& _istream = *((std::istream*)ptr_istream);
-            std::string in_string = {};            
-            exam* e_ptr = (exam*)(clear_loaded_exam());                        
+            std::string in_string = {};
+            exam* e_ptr = (exam*)(clear_loaded_exam());
             std::getline(_istream >> std::ws, in_string);
             e_ptr->exam_name = in_string;
             //getting exam student list index
-            _istream>>e_ptr->exam_index;
+            _istream >> e_ptr->exam_index;
             //                   
-            int i=0;
-            e_ptr->questions._get_super_emptyed();
-            while (std::getline(_istream >> std::ws, in_string) )
-            {                
-                if (i!=0)               
-                {                    
-                    e_ptr->questions.safe_resize();
-                }                                                                       
-                e_ptr->questions[i].question_str = in_string;                
-                std::getline(_istream >> std::ws, in_string);
-                if (in_string=="true")
+            int i = 0;
+            e_ptr->questions.clear();
+            while (std::getline(_istream >> std::ws, in_string))
+            {
+                question* temp_q=&e_ptr->questions[0];
+                if (i != 0)
                 {
-                    e_ptr->questions[i].is_test = true;                    
+                    temp_q=new question();
+                   // e_ptr->questions.push_back(*(new question()));
+                }
+                temp_q->question_str = in_string;
+                std::getline(_istream >> std::ws, in_string);
+                if (in_string == "true")
+                {
+                   temp_q->is_test = true;
                 }
                 else
                 {
-                    e_ptr->questions[i].is_test = false;
+                   temp_q->is_test = false;
                 }
-                _istream >> e_ptr->questions[i].time >> e_ptr->questions[i].score;                
-                if (e_ptr->questions[i].is_test)//its a test
+                _istream >> temp_q->time >> temp_q->score;
+                if (temp_q->is_test)//its a test
                 {
-                    e_ptr->questions[i].change_to_test();
-                    test_question* t_q_ptr = ((test_question*)(e_ptr->questions[i].t_Or_d_question));
+                    temp_q->change_to_test();                    
                     std::getline(_istream >> std::ws, in_string);
-                    t_q_ptr->a = in_string;
+                    temp_q->a = in_string;
                     std::getline(_istream >> std::ws, in_string);
-                    t_q_ptr->b = in_string;
+                    temp_q->b = in_string;
                     std::getline(_istream >> std::ws, in_string);
-                    t_q_ptr->c = in_string;
+                    temp_q->c = in_string;
                     std::getline(_istream >> std::ws, in_string);
-                    t_q_ptr->d = in_string;
+                    temp_q->d = in_string;
                     std::getline(_istream >> std::ws, in_string);
                     if (in_string == "a")
                     {
-                        t_q_ptr->currect_anwser = bp::posible_test_awnsers::a;
+                       temp_q->currect_anwser = bp::posible_test_awnsers::a;
                     }
                     else if (in_string == "b")
                     {
-                        t_q_ptr->currect_anwser = bp::posible_test_awnsers::b;
+                        temp_q->currect_anwser = bp::posible_test_awnsers::b;
                     }
                     else if (in_string == "c")
                     {
-                        t_q_ptr->currect_anwser = bp::posible_test_awnsers::c;
+                       temp_q->currect_anwser = bp::posible_test_awnsers::c;
                     }
                     else if (in_string == "d")
                     {
-                        t_q_ptr->currect_anwser = bp::posible_test_awnsers::d;
+                        temp_q->currect_anwser = bp::posible_test_awnsers::d;
                     }
                     else
                     {
-                        t_q_ptr->currect_anwser = bp::posible_test_awnsers::b;
+                        temp_q->currect_anwser = bp::posible_test_awnsers::b;
                     }
                 }
                 else //its descriptive
                 {
-                    e_ptr->questions[i].change_to_descriptive();
-                    descriptive_question* d_q_ptr = ((descriptive_question*)(e_ptr->questions[i].t_Or_d_question));
+                    temp_q->change_to_descriptive();                    
                     std::getline(_istream >> std::ws, in_string);
-                    d_q_ptr->string_answer = in_string;
+                    temp_q->string_answer = in_string;
                 }
+                if (i!=0)
+                {
+                    e_ptr->questions.push_back(*(temp_q));
+                }
+                
                 i++;
             }
-            
-            
-            
+
+
+
 
 
         }
@@ -713,7 +676,7 @@ namespace bp
             fb.close();
         }
         else //save
-        {            
+        {
             std::filebuf fb;
             if (_delete_old_file == bp::delete_old_f_state::_delete)//delete old file
             {
@@ -747,7 +710,7 @@ namespace bp
             //close flie stream
             fb.close();
         }
-    }   
+    }
 };
 bp::Array<person>* teachers = nullptr;
 bp::Array<person>* students = nullptr;
@@ -760,75 +723,75 @@ namespace g_V
     int number_of_exams = 0;
     void* loaded_exam = nullptr;
     void* loaded_s_l = nullptr;
-    void add_new_sho_da(bp::Array<int> &_sho_d_ha,int value,bool first_Q=false)
+    void add_new_sho_da(bp::Array<int>& _sho_d_ha, int value, bool first_Q = false)
     {
-     if (first_Q)
-     {
-        _sho_d_ha[0]=value;
-     }
-     else
-     {
-        _sho_d_ha.push(value);
-     }
-     
+        if (first_Q)
+        {
+            _sho_d_ha[0] = value;
+        }
+        else
+        {
+            _sho_d_ha.push(value);
+        }
+
     }
     void creat_n_s_l()
     {
         bp::Array<int> sho_d_ha(1);
-        bool keep_looping=true;
+        bool keep_looping = true;
         {//scooped
-            std::cout<<"add fisrt student "<<std::endl;
+            std::cout << "add fisrt student " << std::endl;
             int fisrt_value;
-            std::cin>>fisrt_value;
-            add_new_sho_da(sho_d_ha,fisrt_value,true);
-        }        
+            std::cin >> fisrt_value;
+            add_new_sho_da(sho_d_ha, fisrt_value, true);
+        }
         while (keep_looping)
         {
-            
-            std::cout<<"1: add one more student"<<std::endl;
-            std::cout<<"0: save student list"<<std::endl;
+
+            std::cout << "1: add one more student" << std::endl;
+            std::cout << "0: save student list" << std::endl;
             int input;
-            std::cin>>input;
+            std::cin >> input;
             int other_input;
-            if (input==1)
+            if (input == 1)
             {
-                std::cout<<"adding one more student"<<std::endl;
-            //add student
-            std::cin>>other_input;
-            add_new_sho_da(sho_d_ha,other_input);
+                std::cout << "adding one more student" << std::endl;
+                //add student
+                std::cin >> other_input;
+                add_new_sho_da(sho_d_ha, other_input);
             }
             else
             {
-                 std::cout<<"saving this student list"<<std::endl;
-            //save
-            //find current name for the file
-               //load student lists number file
-            {
-                std::string file_name = "student_lists_number";
-                std::string path = "./";
-                void* _Ptr = &g_V::number_of_s_lists;
-                handle_file(bp::save_load_funcs::students_list_n_l, file_name, bp::save_load_state::load, path, bp::delete_old_f_state::dont_delete, _Ptr);
+                std::cout << "saving this student list" << std::endl;
+                //save
+                //find current name for the file
+                   //load student lists number file
+                {
+                    std::string file_name = "student_lists_number";
+                    std::string path = "./";
+                    void* _Ptr = &g_V::number_of_s_lists;
+                    handle_file(bp::save_load_funcs::students_list_n_l, file_name, bp::save_load_state::load, path, bp::delete_old_f_state::dont_delete, _Ptr);
+                }
+                //save student list
+                {
+                    std::string name = std::to_string(g_V::number_of_s_lists);
+                    std::string file_path = "./student_lists/";
+                    bp::handle_file(bp::save_load_funcs::students_list_save, name, bp::save_load_state::save, file_path, bp::delete_old_f_state::_delete, &sho_d_ha);
+                }
+                //update and save the number of student lists
+                {
+                    g_V::number_of_s_lists++;
+                    std::string file_name = "student_lists_number";
+                    std::string path = "./";
+                    void* _Ptr = &g_V::number_of_s_lists;
+                    handle_file(bp::save_load_funcs::students_list_n_s, file_name, bp::save_load_state::save, path, bp::delete_old_f_state::_delete, _Ptr);
+                }
+                keep_looping = false;
             }
-            //save student list
-            {
-                std::string name=std::to_string(g_V::number_of_s_lists);
-                std::string file_path="./student_lists/";
-                bp::handle_file(bp::save_load_funcs::students_list_save,name,bp::save_load_state::save,file_path,bp::delete_old_f_state::_delete,&sho_d_ha);
-            }
-            //update and save the number of student lists
-            {
-                g_V::number_of_s_lists++;
-                std::string file_name = "student_lists_number";
-                std::string path = "./";
-                void* _Ptr = &g_V::number_of_s_lists;
-                handle_file(bp::save_load_funcs::students_list_n_s, file_name, bp::save_load_state::save, path, bp::delete_old_f_state::dont_delete, _Ptr);
-            }            
-            keep_looping=false;
-            }                      
         }
-        
+
     }
-    
+
     void show_loaded_exam(bool teacher_view = true)
     {
         if (loaded_exam)//an exam is loaded
@@ -836,25 +799,25 @@ namespace g_V
             bp::exam* e_ptr = (bp::exam*)loaded_exam;
             int exam_size = e_ptr->number_of_questions();
             std::cout << e_ptr->exam_name << std::endl;
-            std::cout<<"student list:"<<e_ptr->exam_index<<std::endl;
+            std::cout << "student list:" << e_ptr->exam_index << std::endl;
             for (int i = 0; i < exam_size; i++)
             {
-                std::cout << "question " << i << ':' << std:: endl;
+                std::cout << "question " << i << ':' << std::endl;
                 std::cout << "-----------------------------------------------" << std::endl;
                 std::cout << e_ptr->questions[i].question_str << std::endl;
                 std::cout << "max time :" << e_ptr->questions[i].time << std::endl;
                 std::cout << "score :" << e_ptr->questions[i].score << std::endl;
                 if (e_ptr->questions[i].is_test)///its test
                 {
-                    bp::test_question* t_ptr = (bp::test_question*)e_ptr->questions[i].t_Or_d_question;
-                    std::cout << "option a:" << t_ptr->a << std::endl;
-                    std::cout << "option b:" << t_ptr->b << std::endl;
-                    std::cout << "option c:" << t_ptr->c << std::endl;
-                    std::cout << "option d:" << t_ptr->d << std::endl;
+                    
+                    std::cout << "option a:" << e_ptr->questions[i].a << std::endl;
+                    std::cout << "option b:" << e_ptr->questions[i].b << std::endl;
+                    std::cout << "option c:" << e_ptr->questions[i].c << std::endl;
+                    std::cout << "option d:" << e_ptr->questions[i].d << std::endl;
                     if (teacher_view)
                     {
                         char c_a;
-                        switch (t_ptr->currect_anwser)
+                        switch (e_ptr->questions[i].currect_anwser)
                         {
                         case bp::posible_test_awnsers::a:
                             c_a = 'a';
@@ -873,35 +836,34 @@ namespace g_V
                             break;
                         }
                         std::cout << "currect awnser :" << c_a << std::endl;
-                    }                    
+                    }
                 }
                 else//its descriptive
-                {
-                    bp::descriptive_question* d_ptr = (bp::descriptive_question*)e_ptr->questions[i].t_Or_d_question;
+                {                    
                     if (teacher_view)
                     {
-                        std::cout << "currect awnser :" << d_ptr->string_answer << std::endl;
+                        std::cout << "currect awnser :" << e_ptr->questions[i].string_answer << std::endl;
                     }
                 }
                 std::cout << "-----------------------------------------------" << std::endl;
-            }             
+            }
             std::cout << std::endl << std::endl;
         }
         else // its nullptr and not loaded
         {
             std::cout << "no exam is loaded" << std::endl;
         }
-       
+
     }
     void show_loaded_s_l()
     {
-      bp::Array<int>* ptr=(bp::Array<int>*)g_V::loaded_s_l;
-      int size=ptr->get_size();
-      for (int i = 0; i < size; i++)
-      {
-        std::cout<<"student"<<i<<": "<<ptr->operator[](i)<<std::endl;
-      }
-        
+        bp::Array<int>* ptr = (bp::Array<int>*)g_V::loaded_s_l;
+        int size = ptr->get_size();
+        for (int i = 0; i < size; i++)
+        {
+            std::cout << "student" << i << ": " << ptr->operator[](i) << std::endl;
+        }
+
     }
     void save_loaded_s_l()
     {
@@ -915,8 +877,8 @@ namespace g_V
          // {
         save_loaded_s_l();
         //   }
-    }    
-     void save_loaded_exam()
+    }
+    void save_loaded_exam()
     {
         ///
     }
@@ -930,24 +892,29 @@ namespace g_V
         //   }
 
     }
-   
+
     std::string* exam_names = nullptr;
 };
 //
 void bp::set_loaded_s_l(bp::Array<int>& temp_s_list)
 {
-   delete g_V::loaded_s_l;
-   g_V::loaded_s_l=(void*)(new bp::Array<int>(temp_s_list));
+    if ((bp::Array<int>*)g_V::loaded_s_l)
+    {
+        delete (bp::Array<int>*)g_V::loaded_s_l;
+    }
+
+
+    g_V::loaded_s_l = (void*)(new bp::Array<int>(temp_s_list));
 }
 void* clear_loaded_exam()
+{
+    if ((bp::exam*)g_V::loaded_exam)
     {
-        if (g_V::loaded_exam)
-        {
-           delete g_V::loaded_exam;
-        }                
-        g_V::loaded_exam=new bp::exam;
-        return g_V::loaded_exam;
+        delete (bp::exam*)g_V::loaded_exam;
     }
+    g_V::loaded_exam = new bp::exam;
+    return g_V::loaded_exam;
+}
 void login_system();
 void enter_dashboard(bool is_teacher, person* _persone);
 int main()
@@ -1111,51 +1078,57 @@ void enter_dashboard(bool is_teacher, person* _persone)
             case 2:
                 //exam history                
                 //load exam number file
-                load_e_n_f();                      
-            //load that number of exam names
-            {
-                delete g_V::exam_names;
-                g_V::exam_names = new std::string[g_V::number_of_exams];
-                std::string _exam_name = {};
-                void* _ptr = &_exam_name;
+                load_e_n_f();
+                //load that number of exam names
+                {
+                    if (g_V::exam_names)
+                    {
+                        delete []g_V::exam_names;
+                    }                    
+                    g_V::exam_names = new std::string[g_V::number_of_exams];
+                    std::string _exam_name = {};
+                    void* _ptr = &_exam_name;
+                    for (int i = 0; i < g_V::number_of_exams; i++)
+                    {
+                        std::string file_name = "exam";
+                        file_name += std::to_string(i);
+                        std::string _path = "./exams/";
+                        handle_file(bp::save_load_funcs::load_exam_name, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete, _ptr);
+                        g_V::exam_names[i] = _exam_name;
+                    }
+                }
+                //show that many number of exams
+                //show the exam names
+                std::cout << "-1 :go back" << std::endl;
+                std::cout << "exams:" << std::endl;
                 for (int i = 0; i < g_V::number_of_exams; i++)
                 {
-                    std::string file_name = "exam";
-                    file_name += std::to_string(i);
-                    std::string _path = "./exams/";
-                    handle_file(bp::save_load_funcs::load_exam_name, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete, _ptr);
-                    g_V::exam_names[i] = _exam_name;
+                    std::cout << i << " :" << g_V::exam_names[i] << std::endl;
                 }
-            }
-            //show that many number of exams
-            //show the exam names
-            std::cout << "-1 :go back" << std::endl;
-            std::cout << "exams:" << std::endl;
-            for (int i = 0; i < g_V::number_of_exams; i++)
-            {
-                std::cout << i << " :" << g_V::exam_names[i] << std::endl;
-            }
-            //let the user choose what exam they want to load
-            
-            std::cin >> other_input;
-            if (other_input == -1)
-            {//stop right here and go back                  
-                std::cout << "going back" << std::endl;
+                //let the user choose what exam they want to load
+
+                std::cin >> other_input;
+                if (other_input == -1)
+                {//stop right here and go back                  
+                    std::cout << "going back" << std::endl;
+                    break;
+                }
+                //load that exam
+                {
+                    std::string file_name = "exam" + std::to_string(other_input);
+                    std::string file_path = "./exams/";
+                    if (((bp::exam*)g_V::loaded_exam))
+                    {
+                        delete ((bp::exam*)g_V::loaded_exam);
+                    }                    
+                    g_V::loaded_exam = new bp::exam(1);
+                    handle_file(bp::save_load_funcs::exam_load, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, g_V::loaded_exam);
+                }
+                //show show that exam to the user
+                g_V::show_loaded_exam();
+                //let them edit the iner_contents of that exam
+                g_V::edit_loaded_exam();   //and maybe save it             
                 break;
-            }
-            //load that exam
-            {
-                std::string file_name = "exam" + std::to_string(other_input);
-                std::string file_path = "./exams/";
-                delete g_V::loaded_exam;
-                g_V::loaded_exam = new bp::exam(1);
-                handle_file(bp::save_load_funcs::exam_load, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, g_V::loaded_exam);
-            }
-            //show show that exam to the user
-            g_V::show_loaded_exam();
-            //let them edit the iner_contents of that exam
-            g_V::edit_loaded_exam();   //and maybe save it             
-            break;
             case 3:
                 //student lists
                 //load student lists number file
@@ -1192,8 +1165,8 @@ void enter_dashboard(bool is_teacher, person* _persone)
             g_V::edit_loaded_s_l();
             break;
             case 5:
-            g_V::creat_n_s_l();
-            break;
+                g_V::creat_n_s_l();
+                break;
             default:
                 std::cout << "invalid command. try again" << std::endl;
                 break;
