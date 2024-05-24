@@ -170,13 +170,14 @@ namespace bp
     class exam
     {
     public:
+        bool is_PUBLISHED;
         int exam_index;
         std::string exam_name;
         int total_score, total_time;
         std::vector<question> questions;
     public:
-        exam(int _number_of_questions = 1, std::string _exam_name = {}, int _total_score = 0, int _total_time = 0, int _exam_index = -1)
-            :questions(_number_of_questions), total_score(_total_score), total_time(_total_time), exam_name(_exam_name), exam_index(_exam_index)
+        exam(int _number_of_questions = 1, std::string _exam_name = {}, int _total_score = 0, int _total_time = 0, int _exam_index = -1,bool _published=false)
+            :questions(_number_of_questions), total_score(_total_score), total_time(_total_time), exam_name(_exam_name), exam_index(_exam_index),is_PUBLISHED(_published)
         {
 
         }
@@ -495,7 +496,19 @@ namespace bp
             exam* e_ptr = (exam*)_loaded_exam;
             out_string += ((exam*)_loaded_exam)->exam_name + '\n';
             //adding exam student list index
-            out_string += std::to_string(e_ptr->exam_index);
+            out_string += std::to_string(e_ptr->exam_index)+'\n';
+            //adding published text
+            std::string pu_str{};
+
+            if (e_ptr->is_PUBLISHED)
+            {
+                pu_str="true";
+            }
+            else
+            {                
+                pu_str="false";
+            } 
+            out_string+=pu_str+'\n';                     
             // 
             int exam_size = e_ptr->number_of_questions();
             for (int i = 0; i < exam_size; i++)
@@ -555,17 +568,28 @@ namespace bp
             e_ptr->exam_name = in_string;
             //getting exam student list index
             _istream >> e_ptr->exam_index;
-            //                   
+            //adding published bool
+           
+            std::getline(_istream >> std::ws, in_string);
+            if(in_string=="true")
+            {
+                e_ptr->is_PUBLISHED=true;
+            }
+            else
+            {
+                e_ptr->is_PUBLISHED=false;
+            }                                   
+            //                 
             int i = 0;
             e_ptr->questions.clear();
             while (std::getline(_istream >> std::ws, in_string))
             {
                 question* temp_q=&e_ptr->questions[0];
-                if (i != 0)
-                {
+              //  if (i != 0)
+             //   {
                     temp_q=new question();
                    // e_ptr->questions.push_back(*(new question()));
-                }
+            //    }
                 temp_q->question_str = in_string;
                 std::getline(_istream >> std::ws, in_string);
                 if (in_string == "true")
@@ -616,10 +640,10 @@ namespace bp
                     std::getline(_istream >> std::ws, in_string);
                     temp_q->string_answer = in_string;
                 }
-                if (i!=0)
-                {
+               // if (i!=0)
+              //  {
                     e_ptr->questions.push_back(*(temp_q));
-                }
+             //   }
                 
                 i++;
             }
@@ -719,6 +743,7 @@ int students_size = -1;
 //load and save files
 namespace g_V
 {
+    int loaded_exam_index=-1;
     int number_of_s_lists = 0;
     int number_of_exams = 0;
     void* loaded_exam = nullptr;
@@ -791,7 +816,7 @@ namespace g_V
         }
 
     }
-
+    void edit_loaded_exam();
     void show_loaded_exam(bool teacher_view = true)
     {
         if (loaded_exam)//an exam is loaded
@@ -848,6 +873,10 @@ namespace g_V
                 std::cout << "-----------------------------------------------" << std::endl;
             }
             std::cout << std::endl << std::endl;
+            if (teacher_view)
+            {
+                edit_loaded_exam();
+            }
         }
         else // its nullptr and not loaded
         {
@@ -871,6 +900,8 @@ namespace g_V
     }
     void edit_loaded_s_l()
     {
+        
+        
         ///
        //potantioly save that student_list back to the given file name
         //  if (/* condition */)
@@ -879,18 +910,100 @@ namespace g_V
         //   }
     }
     void save_loaded_exam()
-    {
-        ///
+    {     
+        std::string file_name = "exam" + std::to_string(g_V::loaded_exam_index);
+        std::string _path = "./exams/";
+        handle_file(bp::save_load_funcs::exam_save, file_name, bp::save_load_state::save, _path, bp::delete_old_f_state::_delete, g_V::loaded_exam);       
     }
     void edit_loaded_exam()
     {
-        ///
-        //potantioly save that exam back to the given file name
-         //  if (/* condition */)
-          // {
-        save_loaded_exam();
-        //   }
-
+        bool changed=false;
+        std::cout<<"do you like to add changes to this exam?(y/n)"<<std::endl;
+        char input;
+        std::cin>>input;
+        switch (input)  
+        {
+        case 'y':
+            break;
+        case 'n':
+        return;
+            break;
+        default:
+        std::cout<<"invalid command"<<std::endl;
+        return;
+            break;
+        }
+        while (true)
+        {
+           if (changed)
+           {
+            std::cout<<"0:save and go back to dashboard"<<std::endl;
+           }
+           else
+           {
+             std::cout<<"0:go back to dashboard"<<std::endl;
+           }           
+           std::cout<<"1:change change publicity"<<std::endl;
+           std::cout<<"2:change student list index"<<std::endl;
+           int input;
+           std::cin>>input;
+           char char_input;
+           int other_int_input;
+           switch (input)
+           {
+           case 0:
+           if (changed)
+           {
+            std::cout<<"saving changes"<<std::endl;
+            save_loaded_exam();
+           }
+           std::cout<<"going back to dashborad"<<std::endl;
+           return;            
+            break; 
+            case 1:
+            std::cout<<"change publicity to(t/f):";
+            std::cin>>char_input;
+            if (char_input=='t')
+            {
+                
+                if (((bp::exam*)g_V::loaded_exam)->is_PUBLISHED!=true)
+                {                    
+                    changed=true;
+                    ((bp::exam*)g_V::loaded_exam)->is_PUBLISHED=true;
+                }                
+            }
+            else
+            {
+                if (((bp::exam*)g_V::loaded_exam)->is_PUBLISHED!=false)
+                {                    
+                    changed=true;
+                    ((bp::exam*)g_V::loaded_exam)->is_PUBLISHED=false;
+                }
+                
+            } 
+            break;
+            case 2:
+            std::cout<<"enter new student list index:";
+            std::cin>>other_int_input;
+            if (((bp::exam*)g_V::loaded_exam)->exam_index!=other_int_input)
+            {
+                changed=true;
+                ((bp::exam*)g_V::loaded_exam)->exam_index=other_int_input;
+            }
+            break;
+           default:
+           std::cout<<"invalid command"<<std::endl;
+           if (changed)
+           {
+            std::cout<<"saving changes"<<std::endl;
+            save_loaded_exam();
+           }
+           std::cout<<"going back to dashborad"<<std::endl;
+           return;            
+            break;
+           }
+        }
+      
     }
 
     std::string* exam_names = nullptr;
@@ -1115,6 +1228,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
                 }
                 //load that exam
                 {
+                    g_V::loaded_exam_index=other_input;
                     std::string file_name = "exam" + std::to_string(other_input);
                     std::string file_path = "./exams/";
                     if (((bp::exam*)g_V::loaded_exam))
@@ -1125,9 +1239,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
                     handle_file(bp::save_load_funcs::exam_load, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, g_V::loaded_exam);
                 }
                 //show show that exam to the user
-                g_V::show_loaded_exam();
-                //let them edit the iner_contents of that exam
-                g_V::edit_loaded_exam();   //and maybe save it             
+                g_V::show_loaded_exam();                       
                 break;
             case 3:
                 //student lists
