@@ -3,6 +3,7 @@
 #include<fstream>  
 #include<sstream>
 #include<vector>
+#include <utility>
 class person
 {
 public:
@@ -654,7 +655,46 @@ namespace bp
 
         }
         //exam resaults
-
+        void exam_resault_reload(std::istream* _istream_ptr,std::vector<std::tuple<int,int,int>>* _g_v_loaded_student_scores,bool* _g_v_loaded_stu_score_exists)
+        {
+            *_g_v_loaded_stu_score_exists=true;
+            std::string in_string{};
+         //start check
+         std::getline(*_istream_ptr>>std::ws,in_string);
+         if (in_string=="start")
+         {
+            _g_v_loaded_student_scores->clear();
+            while (std::getline(*_istream_ptr>>std::ws,in_string))
+            {
+                std::stringstream ss(in_string);
+                int temp_student_id;
+                int temp_student_e_score;
+                int temp_student_t_score;
+                ss>>temp_student_id>>temp_student_e_score>>temp_student_t_score;
+                _g_v_loaded_student_scores->push_back(std::make_tuple(temp_student_id,temp_student_e_score,temp_student_t_score));               
+            }            
+         }
+         else
+         {
+            *_g_v_loaded_stu_score_exists=false;
+            return;
+         }         
+        }
+        void exam_resault_save(std::ostream* _ostream_ptr,std::vector<std::tuple<int,int,int>>* _g_v_loaded_student_scores)
+        {
+            
+            std::string out_string{};
+            //start check
+            out_string+="start"+'\n';
+            int number=_g_v_loaded_student_scores->size();
+            for (int i = 0; i < number; i++)
+            {
+              out_string+=std::to_string(std::get<0>((*_g_v_loaded_student_scores)[i]))+'\n';
+              out_string+=std::to_string(std::get<1>((*_g_v_loaded_student_scores)[i]))+'\n'; 
+              out_string+=std::to_string(std::get<2>((*_g_v_loaded_student_scores)[i]))+'\n';  
+            }                
+            *_ostream_ptr<<out_string;
+        }
         //eteraz
         void eteraz_reload(std::istream* _istream_ptr,std::string* _g_v_loaded_eteraz,bool* _g_v_is_eteraz_loaded)
         {
