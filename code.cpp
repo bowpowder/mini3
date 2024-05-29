@@ -655,7 +655,76 @@ namespace bp
         }
         //exam resaults
 
-
+        //eteraz
+        void eteraz_reload(std::istream* _istream_ptr,std::string* _g_v_loaded_eteraz,bool* _g_v_is_eteraz_loaded)
+        {
+            *_g_v_is_eteraz_loaded=true;
+            std::string start_check;
+            std::getline(*_istream_ptr>>std::ws,start_check);
+            if (start_check!="start")
+            {
+                *_g_v_is_eteraz_loaded=false;
+                return;
+            }
+            std::string input_str{};
+            std::string temp_str{};
+            while (std::getline(*_istream_ptr>>std::ws,temp_str))
+            {
+                input_str+=temp_str+'\n';;
+            }
+               *_g_v_loaded_eteraz=input_str;       
+        }
+        void eteraz_save(std::ostream* _ostream_ptr,std::string* _g_v_loaded_eteraz)
+        {
+            std::string out_str{};
+            //adding start check str
+            out_str+="start"+'\n';
+            out_str+=*_g_v_loaded_eteraz;
+            *_ostream_ptr<<out_str;
+        }
+        void eteraz_codes_reload(std::istream* _istream_ptr,std::vector<int>* _g_v_loaded_eT_N_V,bool* _G_V_loaded_et_bool)
+        {
+            *_G_V_loaded_et_bool=true;
+            std::string start_check;
+            std::getline(*_istream_ptr>>std::ws,start_check);
+            if (start_check!="start")
+            {
+                *_G_V_loaded_et_bool=false;
+                return;
+            }
+            int number;
+            *_istream_ptr>>number;
+            //empty the loaded vector
+            _g_v_loaded_eT_N_V->clear();
+            if (number>0)
+            {
+                int temp_int;
+               for (int i = 0; i < number; i++)
+               {
+                *_istream_ptr>>temp_int;
+                _g_v_loaded_eT_N_V->push_back(temp_int);
+               }
+               
+            }
+            else
+            {
+                 *_G_V_loaded_et_bool=false;
+                return;
+            }           
+        }
+        void eteraz_codes_save(std::ostream* _ostream_ptr,std::vector<int>* _g_v_loaded_eT_N_V)
+        {          
+            std::string out_string{};
+            //add start check srting
+            out_string+="start"+'/n';
+            int number=_g_v_loaded_eT_N_V->size();
+            out_string+=std::to_string(number)+'\n';
+            for (int i = 0; i < number; i++)
+            {
+                *_ostream_ptr<<(*_g_v_loaded_eT_N_V)[i]<<'\n';
+            }           
+          
+        }
         //exam name
         void exam_name_load(void* ptr_istream, void* ptr_name)
         {
