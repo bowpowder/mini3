@@ -37,15 +37,16 @@ public:
 };
 void load_e_n_f();
 void save_e_n_f(bool add_one_first);
+void load_studnt_list_n_f();
 int give_num_e();
 void* clear_loaded_exam();
-
+int* get_student_mode_slin();
 namespace bp
 {
 
     enum save_load_funcs
     {
-        students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name
+        students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name,load_exam_name_and_sl_index
     };
     enum save_load_state
     {
@@ -442,7 +443,7 @@ namespace bp
             }
             _ostream << out_string;
         }
-        void student_list_f_reaload(void* ptr_istream, void* ptr__students_list)
+        void student_list_f_reaload(void* ptr_istream)
         {
             bp::Array<int>* temp_s_list = new bp::Array<int>(1);
             std::istream& _istream = *((std::istream*)ptr_istream);
@@ -489,7 +490,7 @@ namespace bp
             std::istream& _istream = *((std::istream*)ptr_istream);
             _istream >> size;
         }
-        //exam
+        //exam        
         void exam_save(void* ptr_ostream, void* _loaded_exam)
         {
             std::ostream& _ostream = *((std::ostream*)ptr_ostream);
@@ -756,7 +757,7 @@ namespace bp
         {          
             std::string out_string{};
             //add start check srting
-            out_string+="start"+'/n';
+            out_string+="start"+'\n';
             int number=_g_v_loaded_eT_N_V->size();
             out_string+=std::to_string(number)+'\n';
             for (int i = 0; i < number; i++)
@@ -766,11 +767,15 @@ namespace bp
           
         }
         //exam name
-        void exam_name_load(void* ptr_istream, void* ptr_name)
+        void exam_name_load(void* ptr_istream, void* ptr_name,int* student_list_index=nullptr,bool studnet_mode=false)
         {
             std::string& _name = *((std::string*)ptr_name);
             std::istream& _istream = *((std::istream*)ptr_istream);
             _istream >> _name;
+            if (studnet_mode)
+            {
+                _istream>>*student_list_index;
+            }            
         }
     }
     void handle_file(bp::save_load_funcs s_l_func, std::string file_name, bp::save_load_state _read_write_state, std::string path = "./", bp::delete_old_f_state _delete_old_file = bp::delete_old_f_state::dont_delete, void* _ptr = nullptr)
@@ -795,8 +800,11 @@ namespace bp
             case bp::save_load_funcs::load_exam_name:
                 bp::file::exam_name_load(&_istream, _ptr);
                 break;
+                case bp::save_load_funcs::load_exam_name_and_sl_index:
+                bp::file::exam_name_load(&_istream, _ptr,get_student_mode_slin());
+                break;
             case bp::save_load_funcs::students_list_load:
-                bp::file::student_list_f_reaload(&_istream, _ptr);
+                bp::file::student_list_f_reaload(&_istream);
                 break;
             case bp::save_load_funcs::students_list_n_l:
                 bp::file::student_list_number_reload(&_istream, _ptr);
@@ -846,12 +854,13 @@ namespace bp
     }
 };
 bp::Array<person>* teachers = nullptr;
-bp::Array<person>* students = nullptr;
+bp::Array<simple_daneshjo>* students = nullptr;
 int teachers_size = -1;
 int students_size = -1;
 //load and save files
 namespace g_V
 {
+    int student_mode_stu_l_index=0;
     int loaded_exam_index=-1;
     int number_of_s_lists = 0;
     int number_of_exams = 0;
@@ -925,6 +934,10 @@ namespace g_V
         }
 
     }
+    int* get_student_mode_slin()
+    {
+        return &g_V::student_mode_stu_l_index;
+    }
     void edit_loaded_exam();
     void show_loaded_exam(bool teacher_view = true)
     {
@@ -970,6 +983,10 @@ namespace g_V
                             break;
                         }
                         std::cout << "currect awnser :" << c_a << std::endl;
+                    }
+                    else
+                    {
+                        ////awnser the questions
                     }
                 }
                 else//its descriptive
@@ -1124,8 +1141,6 @@ void bp::set_loaded_s_l(bp::Array<int>& temp_s_list)
     {
         delete (bp::Array<int>*)g_V::loaded_s_l;
     }
-
-
     g_V::loaded_s_l = (void*)(new bp::Array<int>(temp_s_list));
 }
 void* clear_loaded_exam()
@@ -1155,14 +1170,14 @@ int main()
     }
     //students
     int _students_size = 10;
-    bp::Array<person> _students(_students_size);
+    bp::Array<simple_daneshjo> _students(_students_size);
     for (int i = 0; i < _students_size; i++)
     {
         std::string temp_name = "student";
         temp_name += std::to_string(i);
         std::string temp_password = "pass";
         temp_password += std::to_string(i);
-        person temp_person(temp_name, temp_password);
+        simple_daneshjo temp_person(i,temp_name, temp_password);
         _students.push(temp_person);
     }
     //seting up the login system
@@ -1219,8 +1234,7 @@ void login_system()
                 {
                     pass_was_correct = true;
                     //log in that account
-
-                       // creating/accessing dashbord
+                    enter_dashboard(false, &students->operator[](i));
                     //                
                     break;
                 }
@@ -1245,6 +1259,13 @@ void load_e_n_f()
     std::string file_path = "./";
     void* _ptr = &g_V::number_of_exams;
     handle_file(bp::save_load_funcs::exam_n_l, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, _ptr);
+}
+void load_studnt_list_n_f()
+{
+    std::string file_name = "student_lists_number";
+    std::string file_path = "./";
+    void* _ptr = &g_V::number_of_s_lists;
+    handle_file(bp::save_load_funcs::students_list_n_l, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, _ptr);
 }
 int give_num_e()
 {
@@ -1396,7 +1417,149 @@ void enter_dashboard(bool is_teacher, person* _persone)
     }
     else //its a student
     {
-        ///no nonono
+      bool keep_loop_going = true;
+        while (keep_loop_going)
+        {
+            std::cout << "-1 : log out and exit application" << '\n';
+            std::cout << "0 : log out" << '\n';
+            std::cout << "1 : participate in an exam" << '\n';
+            std::cout << "2 : exam history" << '\n';            
+            std::cout << "3 : exam resualts" << std::endl;            
+            int command;
+            std::cin >> command;
+            int other_input;
+            std::vector<int> _student_mode_exam_vector;
+            std::vector<int> _stu_l_vector;
+            int stundet_id=((simple_daneshjo*)_persone)->shomare_daneshjoii;
+            bool found_currect_number=false;
+            int size;
+            switch (command)
+            {
+            case -1:
+                //log out and exit application
+                //log out
+
+                //exit application
+                exit(0);
+                break;
+            case 0:
+                //log out
+
+                //return to loging system
+                return;
+                break;
+            case 1:
+               //
+                break;
+            case 2:
+                //exam history
+                //load all studnet list and see which on this student is in
+                //create a vector of maching student lists
+                  
+                //load exam number file
+                load_studnt_list_n_f();
+                //load that many studnet lists
+                 for (int i = 0; i < g_V::number_of_s_lists; i++)
+                    {
+                        std::string file_name = std::to_string(i);
+                        file_name += std::to_string(i);
+                        std::string _path = "./student_lists/";
+                        handle_file(bp::save_load_funcs::students_list_load, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete); 
+                        size=((std::vector<int>*)g_V::loaded_s_l)->size();                        
+                        for (int j = 0; j <size; j++)
+                        {
+                            if ((*((std::vector<int>*)g_V::loaded_s_l))[j]==stundet_id)
+                            {
+                                _stu_l_vector.push_back(i);
+                                break;
+                            }
+                            
+                        }                                              
+                    }
+                //load that number of exam names
+                {
+                    if (g_V::exam_names)
+                    {
+                        delete []g_V::exam_names;
+                    }                    
+                    g_V::exam_names = new std::string[g_V::number_of_exams];
+                    std::string _exam_name = {};
+                    void* _ptr = &_exam_name;
+                    for (int i = 0; i < g_V::number_of_exams; i++)
+                    {
+                        std::string file_name = "exam";
+                        file_name += std::to_string(i);
+                        std::string _path = "./exams/";
+                        handle_file(bp::save_load_funcs::load_exam_name_and_sl_index, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete, _ptr);
+                        g_V::exam_names[i] = _exam_name;
+                        size=_stu_l_vector.size();
+                        int loaded_exam_studnet_list=*get_student_mode_slin();
+                        for (int j = 0; i < size; i++)
+                        {
+                            if (loaded_exam_studnet_list==_stu_l_vector[j])
+                            {
+                                _student_mode_exam_vector.push_back(i);
+                                break;
+                            }
+                            
+                        }
+                        
+                    }
+                }
+                
+                
+                
+                //show that many number of exams
+                //show the exam names
+                std::cout << "-1 :go back" << std::endl;
+                std::cout << "exams:" << std::endl;
+                size=_student_mode_exam_vector.size();
+                for (int i = 0; i < size; i++)
+                {
+                    std::cout << i << " :" << _student_mode_exam_vector[i] << std::endl;
+                }
+                //let the user choose what exam they want to load
+
+                std::cin >> other_input;
+                if (other_input == -1)
+                {//stop right here and go back                  
+                    std::cout << "going back" << std::endl;
+                    break;
+                }
+                //load that exam
+                
+                {   
+                    
+                    for (int i = 0; i < size; i++)
+                    {
+                        if (other_input==_student_mode_exam_vector[i])
+                        {
+                            found_currect_number=true;
+                            g_V::loaded_exam_index=other_input;
+                            std::string file_name = "exam" + std::to_string(other_input);
+                            std::string file_path = "./exams/";
+                            if (((bp::exam*)g_V::loaded_exam))
+                            {
+                                delete ((bp::exam*)g_V::loaded_exam);
+                            }                    
+                            g_V::loaded_exam = new bp::exam(1);
+                            handle_file(bp::save_load_funcs::exam_load, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, g_V::loaded_exam);
+                            //show show that exam to the user
+                            g_V::show_loaded_exam(false);
+                            break;
+                        }                        
+                    }                                           
+                }               
+                 if (!found_currect_number)
+                   {
+                     std::cout << "going back" << std::endl;
+                   }                       
+                break;                      
+            default:
+                std::cout << "invalid command. try again" << std::endl;
+                break;
+            }
+        }
     }
 
 
