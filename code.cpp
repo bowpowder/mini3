@@ -46,7 +46,7 @@ namespace bp
 
     enum save_load_funcs
     {
-        students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name,load_exam_name_and_sl_index
+        students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name, load_exam_name_and_sl_index
     };
     enum save_load_state
     {
@@ -78,7 +78,7 @@ namespace bp
             if (heap_alocated_array)
             {
                 operator delete[](heap_alocated_array);
-            }            
+            }
             heap_alocated_array = new T[max_size];
         }
         void _get_super_emptyed()
@@ -118,8 +118,8 @@ namespace bp
 
                 if (heap_alocated_array)
                 {
-                    delete []heap_alocated_array;
-                }                
+                    delete[]heap_alocated_array;
+                }
                 heap_alocated_array = temp;
             }
         }
@@ -136,10 +136,10 @@ namespace bp
             if (heap_alocated_array)
             {
                 delete[] heap_alocated_array;
-            }            
+            }
         }
     };
-    void set_loaded_s_l(bp::Array<int>& temp_s_list);   
+    void set_loaded_s_l(bp::Array<int>& temp_s_list);
     class question
     {
     public:
@@ -155,18 +155,18 @@ namespace bp
 
     public:
         question(bool _is_test = true, int _score = 0, int _time = 0, std::string _question_str = {}) :is_test(_is_test), score(_score), time(_time), question_str(_question_str)
-        {          
+        {
         }
         ~question()
         {
         }
         void change_to_test()
-        {          
-            is_test = true;           
+        {
+            is_test = true;
         }
         void change_to_descriptive()
-        {          
-            is_test = false;         
+        {
+            is_test = false;
         }
     };
     class exam
@@ -178,8 +178,8 @@ namespace bp
         int total_score, total_time;
         std::vector<question> questions;
     public:
-        exam(int _number_of_questions = 1, std::string _exam_name = {}, int _total_score = 0, int _total_time = 0, int _exam_index = -1,bool _published=false)
-            :questions(_number_of_questions), total_score(_total_score), total_time(_total_time), exam_name(_exam_name), exam_index(_exam_index),is_PUBLISHED(_published)
+        exam(int _number_of_questions = 1, std::string _exam_name = {}, int _total_score = 0, int _total_time = 0, int _exam_index = -1, bool _published = false)
+            :questions(_number_of_questions), total_score(_total_score), total_time(_total_time), exam_name(_exam_name), exam_index(_exam_index), is_PUBLISHED(_published)
         {
 
         }
@@ -193,7 +193,7 @@ namespace bp
             char input;
             std::cout << "c : cancel" << std::endl;
             std::cout << "is it test?(y/n)" << std::endl;
-            std::cin >> input;            
+            std::cin >> input;
             question* temp_q = nullptr;
             if (!is_first)
             {
@@ -303,7 +303,7 @@ namespace bp
                     questions[0].currect_anwser = currect_test_anwser;
                 }
                 else
-                {                   
+                {
                     questions[0].string_answer = descriptive_answer;
                 }
 
@@ -315,7 +315,7 @@ namespace bp
                 temp_q->time = temp_time;
                 temp_q->score = temp_score;
                 if (is_test)
-                {                   
+                {
                     temp_q->a = test_options[0];
                     temp_q->b = test_options[1];
                     temp_q->c = test_options[2];
@@ -323,7 +323,7 @@ namespace bp
                     temp_q->currect_anwser = currect_test_anwser;
                 }
                 else
-                {                    
+                {
                     temp_q->string_answer = descriptive_answer;
                 }
                 questions.push_back(*temp_q);
@@ -498,19 +498,19 @@ namespace bp
             exam* e_ptr = (exam*)_loaded_exam;
             out_string += ((exam*)_loaded_exam)->exam_name + '\n';
             //adding exam student list index
-            out_string += std::to_string(e_ptr->exam_index)+'\n';
+            out_string += std::to_string(e_ptr->exam_index) + '\n';
             //adding published text
             std::string pu_str{};
 
             if (e_ptr->is_PUBLISHED)
             {
-                pu_str="true";
+                pu_str = "true";
             }
             else
-            {                
-                pu_str="false";
-            } 
-            out_string+=pu_str+'\n';                     
+            {
+                pu_str = "false";
+            }
+            out_string += pu_str + '\n';
             // 
             int exam_size = e_ptr->number_of_questions();
             for (int i = 0; i < exam_size; i++)
@@ -529,7 +529,7 @@ namespace bp
                 out_string += std::to_string(e_ptr->questions[i].score) + '\n';
                 if (e_ptr->questions[i].is_test)//its a test
                 {
-                    
+
                     out_string += e_ptr->questions[i].a + '\n' + e_ptr->questions[i].b + '\n' + e_ptr->questions[i].c + '\n' + e_ptr->questions[i].d + '\n';
                     std::string out_char = {};
                     switch (e_ptr->questions[i].currect_anwser)
@@ -555,7 +555,7 @@ namespace bp
 
                 }
                 else //its descriptive
-                {                    
+                {
                     out_string += e_ptr->questions[i].string_answer + '\n';
                 }
             }
@@ -571,41 +571,41 @@ namespace bp
             //getting exam student list index
             _istream >> e_ptr->exam_index;
             //adding published bool
-           
+
             std::getline(_istream >> std::ws, in_string);
-            if(in_string=="true")
+            if (in_string == "true")
             {
-                e_ptr->is_PUBLISHED=true;
+                e_ptr->is_PUBLISHED = true;
             }
             else
             {
-                e_ptr->is_PUBLISHED=false;
-            }                                   
+                e_ptr->is_PUBLISHED = false;
+            }
             //                 
             int i = 0;
             e_ptr->questions.clear();
             while (std::getline(_istream >> std::ws, in_string))
             {
-                question* temp_q=&e_ptr->questions[0];
-              //  if (i != 0)
-             //   {
-                    temp_q=new question();
-                   // e_ptr->questions.push_back(*(new question()));
-            //    }
+                question* temp_q = &e_ptr->questions[0];
+                //  if (i != 0)
+               //   {
+                temp_q = new question();
+                // e_ptr->questions.push_back(*(new question()));
+         //    }
                 temp_q->question_str = in_string;
                 std::getline(_istream >> std::ws, in_string);
                 if (in_string == "true")
                 {
-                   temp_q->is_test = true;
+                    temp_q->is_test = true;
                 }
                 else
                 {
-                   temp_q->is_test = false;
+                    temp_q->is_test = false;
                 }
                 _istream >> temp_q->time >> temp_q->score;
                 if (temp_q->is_test)//its a test
                 {
-                    temp_q->change_to_test();                    
+                    temp_q->change_to_test();
                     std::getline(_istream >> std::ws, in_string);
                     temp_q->a = in_string;
                     std::getline(_istream >> std::ws, in_string);
@@ -617,7 +617,7 @@ namespace bp
                     std::getline(_istream >> std::ws, in_string);
                     if (in_string == "a")
                     {
-                       temp_q->currect_anwser = bp::posible_test_awnsers::a;
+                        temp_q->currect_anwser = bp::posible_test_awnsers::a;
                     }
                     else if (in_string == "b")
                     {
@@ -625,7 +625,7 @@ namespace bp
                     }
                     else if (in_string == "c")
                     {
-                       temp_q->currect_anwser = bp::posible_test_awnsers::c;
+                        temp_q->currect_anwser = bp::posible_test_awnsers::c;
                     }
                     else if (in_string == "d")
                     {
@@ -638,15 +638,15 @@ namespace bp
                 }
                 else //its descriptive
                 {
-                    temp_q->change_to_descriptive();                    
+                    temp_q->change_to_descriptive();
                     std::getline(_istream >> std::ws, in_string);
                     temp_q->string_answer = in_string;
                 }
-               // if (i!=0)
-              //  {
-                    e_ptr->questions.push_back(*(temp_q));
-             //   }
-                
+                // if (i!=0)
+               //  {
+                e_ptr->questions.push_back(*(temp_q));
+                //   }
+
                 i++;
             }
 
@@ -656,126 +656,127 @@ namespace bp
 
         }
         //exam resaults
-        void exam_resault_reload(std::istream* _istream_ptr,std::vector<std::tuple<int,int,int>>* _g_v_loaded_student_scores,bool* _g_v_loaded_stu_score_exists)
+        void exam_resault_reload(std::istream* _istream_ptr, std::vector<std::tuple<int, int, int>>* _g_v_loaded_student_scores, bool* _g_v_loaded_stu_score_exists)
         {
-            *_g_v_loaded_stu_score_exists=true;
+            *_g_v_loaded_stu_score_exists = true;
             std::string in_string{};
-         //start check
-         std::getline(*_istream_ptr>>std::ws,in_string);
-         if (in_string=="start")
-         {
-            _g_v_loaded_student_scores->clear();
-            while (std::getline(*_istream_ptr>>std::ws,in_string))
+            //start check
+            std::getline(*_istream_ptr >> std::ws, in_string);
+            if (in_string == "start")
             {
-                std::stringstream ss(in_string);
-                int temp_student_id;
-                int temp_student_e_score;
-                int temp_student_t_score;
-                ss>>temp_student_id>>temp_student_e_score>>temp_student_t_score;
-                _g_v_loaded_student_scores->push_back(std::make_tuple(temp_student_id,temp_student_e_score,temp_student_t_score));               
-            }            
-         }
-         else
-         {
-            *_g_v_loaded_stu_score_exists=false;
-            return;
-         }         
+                _g_v_loaded_student_scores->clear();
+                while (std::getline(*_istream_ptr >> std::ws, in_string))
+                {
+                    std::stringstream ss(in_string);
+                    int temp_student_id;
+                    int temp_student_e_score;
+                    int temp_student_t_score;
+                    ss >> temp_student_id >> temp_student_e_score >> temp_student_t_score;
+                    _g_v_loaded_student_scores->push_back(std::make_tuple(temp_student_id, temp_student_e_score, temp_student_t_score));
+                    
+                }
+            }
+            else
+            {
+                *_g_v_loaded_stu_score_exists = false;
+                return;
+            }
         }
-        void exam_resault_save(std::ostream* _ostream_ptr,std::vector<std::tuple<int,int,int>>* _g_v_loaded_student_scores)
+        void exam_resault_save(std::ostream* _ostream_ptr, std::vector<std::tuple<int, int, int>>* _g_v_loaded_student_scores)
         {
-            
+
             std::string out_string{};
             //start check
-            out_string+="start"+'\n';
-            int number=_g_v_loaded_student_scores->size();
+            out_string += "start" + '\n';
+            int number = _g_v_loaded_student_scores->size();
             for (int i = 0; i < number; i++)
             {
-              out_string+=std::to_string(std::get<0>((*_g_v_loaded_student_scores)[i]))+'\n';
-              out_string+=std::to_string(std::get<1>((*_g_v_loaded_student_scores)[i]))+'\n'; 
-              out_string+=std::to_string(std::get<2>((*_g_v_loaded_student_scores)[i]))+'\n';  
-            }                
-            *_ostream_ptr<<out_string;
+                out_string += std::to_string(std::get<0>((*_g_v_loaded_student_scores)[i])) + '\n';
+                out_string += std::to_string(std::get<1>((*_g_v_loaded_student_scores)[i])) + '\n';
+                out_string += std::to_string(std::get<2>((*_g_v_loaded_student_scores)[i])) + '\n';
+            }
+            *_ostream_ptr << out_string;
         }
         //eteraz
-        void eteraz_reload(std::istream* _istream_ptr,std::string* _g_v_loaded_eteraz,bool* _g_v_is_eteraz_loaded)
+        void eteraz_reload(std::istream* _istream_ptr, std::string* _g_v_loaded_eteraz, bool* _g_v_is_eteraz_loaded)
         {
-            *_g_v_is_eteraz_loaded=true;
+            *_g_v_is_eteraz_loaded = true;
             std::string start_check;
-            std::getline(*_istream_ptr>>std::ws,start_check);
-            if (start_check!="start")
+            std::getline(*_istream_ptr >> std::ws, start_check);
+            if (start_check != "start")
             {
-                *_g_v_is_eteraz_loaded=false;
+                *_g_v_is_eteraz_loaded = false;
                 return;
             }
             std::string input_str{};
             std::string temp_str{};
-            while (std::getline(*_istream_ptr>>std::ws,temp_str))
+            while (std::getline(*_istream_ptr >> std::ws, temp_str))
             {
-                input_str+=temp_str+'\n';;
+                input_str += temp_str + '\n';;
             }
-               *_g_v_loaded_eteraz=input_str;       
+            *_g_v_loaded_eteraz = input_str;
         }
-        void eteraz_save(std::ostream* _ostream_ptr,std::string* _g_v_loaded_eteraz)
+        void eteraz_save(std::ostream* _ostream_ptr, std::string* _g_v_loaded_eteraz)
         {
             std::string out_str{};
             //adding start check str
-            out_str+="start"+'\n';
-            out_str+=*_g_v_loaded_eteraz;
-            *_ostream_ptr<<out_str;
+            out_str += "start" + '\n';
+            out_str += *_g_v_loaded_eteraz;
+            *_ostream_ptr << out_str;
         }
-        void eteraz_codes_reload(std::istream* _istream_ptr,std::vector<int>* _g_v_loaded_eT_N_V,bool* _G_V_loaded_et_bool)
+        void eteraz_codes_reload(std::istream* _istream_ptr, std::vector<int>* _g_v_loaded_eT_N_V, bool* _G_V_loaded_et_bool)
         {
-            *_G_V_loaded_et_bool=true;
+            *_G_V_loaded_et_bool = true;
             std::string start_check;
-            std::getline(*_istream_ptr>>std::ws,start_check);
-            if (start_check!="start")
+            std::getline(*_istream_ptr >> std::ws, start_check);
+            if (start_check != "start")
             {
-                *_G_V_loaded_et_bool=false;
+                *_G_V_loaded_et_bool = false;
                 return;
             }
             int number;
-            *_istream_ptr>>number;
+            *_istream_ptr >> number;
             //empty the loaded vector
             _g_v_loaded_eT_N_V->clear();
-            if (number>0)
+            if (number > 0)
             {
                 int temp_int;
-               for (int i = 0; i < number; i++)
-               {
-                *_istream_ptr>>temp_int;
-                _g_v_loaded_eT_N_V->push_back(temp_int);
-               }
-               
+                for (int i = 0; i < number; i++)
+                {
+                    *_istream_ptr >> temp_int;
+                    _g_v_loaded_eT_N_V->push_back(temp_int);
+                }
+
             }
             else
             {
-                 *_G_V_loaded_et_bool=false;
+                *_G_V_loaded_et_bool = false;
                 return;
-            }           
+            }
         }
-        void eteraz_codes_save(std::ostream* _ostream_ptr,std::vector<int>* _g_v_loaded_eT_N_V)
-        {          
+        void eteraz_codes_save(std::ostream* _ostream_ptr, std::vector<int>* _g_v_loaded_eT_N_V)
+        {
             std::string out_string{};
             //add start check srting
-            out_string+="start"+'\n';
-            int number=_g_v_loaded_eT_N_V->size();
-            out_string+=std::to_string(number)+'\n';
+            out_string += "start" + '\n';
+            int number = _g_v_loaded_eT_N_V->size();
+            out_string += std::to_string(number) + '\n';
             for (int i = 0; i < number; i++)
             {
-                *_ostream_ptr<<(*_g_v_loaded_eT_N_V)[i]<<'\n';
-            }           
-          
+                *_ostream_ptr << (*_g_v_loaded_eT_N_V)[i] << '\n';
+            }
+
         }
         //exam name
-        void exam_name_load(void* ptr_istream, void* ptr_name,int* student_list_index=nullptr,bool studnet_mode=false)
+        void exam_name_load(void* ptr_istream, void* ptr_name, int* student_list_index = nullptr, bool studnet_mode = false)
         {
             std::string& _name = *((std::string*)ptr_name);
             std::istream& _istream = *((std::istream*)ptr_istream);
             _istream >> _name;
             if (studnet_mode)
             {
-                _istream>>*student_list_index;
-            }            
+                _istream >> *student_list_index;
+            }
         }
     }
     void handle_file(bp::save_load_funcs s_l_func, std::string file_name, bp::save_load_state _read_write_state, std::string path = "./", bp::delete_old_f_state _delete_old_file = bp::delete_old_f_state::dont_delete, void* _ptr = nullptr)
@@ -800,8 +801,8 @@ namespace bp
             case bp::save_load_funcs::load_exam_name:
                 bp::file::exam_name_load(&_istream, _ptr);
                 break;
-                case bp::save_load_funcs::load_exam_name_and_sl_index:
-                bp::file::exam_name_load(&_istream, _ptr,get_student_mode_slin());
+            case bp::save_load_funcs::load_exam_name_and_sl_index:
+                bp::file::exam_name_load(&_istream, _ptr, get_student_mode_slin());
                 break;
             case bp::save_load_funcs::students_list_load:
                 bp::file::student_list_f_reaload(&_istream);
@@ -860,12 +861,12 @@ int students_size = -1;
 //load and save files
 namespace g_V
 {
-    int student_mode_stu_l_index=0;
-    int loaded_exam_index=-1;
+    int student_mode_stu_l_index = 0;
+    int loaded_exam_index = -1;
     int number_of_s_lists = 0;
     int number_of_exams = 0;
     void* loaded_exam = nullptr;
-    void* loaded_s_l = nullptr;
+    bp::Array<int>* loaded_s_l = nullptr;
     void add_new_sho_da(bp::Array<int>& _sho_d_ha, int value, bool first_Q = false)
     {
         if (first_Q)
@@ -934,10 +935,7 @@ namespace g_V
         }
 
     }
-    int* get_student_mode_slin()
-    {
-        return &g_V::student_mode_stu_l_index;
-    }
+ 
     void edit_loaded_exam();
     void show_loaded_exam(bool teacher_view = true)
     {
@@ -956,7 +954,7 @@ namespace g_V
                 std::cout << "score :" << e_ptr->questions[i].score << std::endl;
                 if (e_ptr->questions[i].is_test)///its test
                 {
-                    
+
                     std::cout << "option a:" << e_ptr->questions[i].a << std::endl;
                     std::cout << "option b:" << e_ptr->questions[i].b << std::endl;
                     std::cout << "option c:" << e_ptr->questions[i].c << std::endl;
@@ -990,7 +988,7 @@ namespace g_V
                     }
                 }
                 else//its descriptive
-                {                    
+                {
                     if (teacher_view)
                     {
                         std::cout << "currect awnser :" << e_ptr->questions[i].string_answer << std::endl;
@@ -1026,8 +1024,8 @@ namespace g_V
     }
     void edit_loaded_s_l()
     {
-        
-        
+
+
         ///
        //potantioly save that student_list back to the given file name
         //  if (/* condition */)
@@ -1036,112 +1034,116 @@ namespace g_V
         //   }
     }
     void save_loaded_exam()
-    {     
+    {
         std::string file_name = "exam" + std::to_string(g_V::loaded_exam_index);
         std::string _path = "./exams/";
-        handle_file(bp::save_load_funcs::exam_save, file_name, bp::save_load_state::save, _path, bp::delete_old_f_state::_delete, g_V::loaded_exam);       
+        handle_file(bp::save_load_funcs::exam_save, file_name, bp::save_load_state::save, _path, bp::delete_old_f_state::_delete, g_V::loaded_exam);
     }
     void edit_loaded_exam()
     {
-        bool changed=false;
-        std::cout<<"do you like to add changes to this exam?(y/n)"<<std::endl;
+        bool changed = false;
+        std::cout << "do you like to add changes to this exam?(y/n)" << std::endl;
         char input;
-        std::cin>>input;
-        switch (input)  
+        std::cin >> input;
+        switch (input)
         {
         case 'y':
             break;
         case 'n':
-        return;
+            return;
             break;
         default:
-        std::cout<<"invalid command"<<std::endl;
-        return;
+            std::cout << "invalid command" << std::endl;
+            return;
             break;
         }
         while (true)
         {
-           if (changed)
-           {
-            std::cout<<"0:save and go back to dashboard"<<std::endl;
-           }
-           else
-           {
-             std::cout<<"0:go back to dashboard"<<std::endl;
-           }           
-           std::cout<<"1:change change publicity"<<std::endl;
-           std::cout<<"2:change student list index"<<std::endl;
-           int input;
-           std::cin>>input;
-           char char_input;
-           int other_int_input;
-           switch (input)
-           {
-           case 0:
-           if (changed)
-           {
-            std::cout<<"saving changes"<<std::endl;
-            save_loaded_exam();
-           }
-           std::cout<<"going back to dashborad"<<std::endl;
-           return;            
-            break; 
-            case 1:
-            std::cout<<"change publicity to(t/f):";
-            std::cin>>char_input;
-            if (char_input=='t')
+            if (changed)
             {
-                
-                if (((bp::exam*)g_V::loaded_exam)->is_PUBLISHED!=true)
-                {                    
-                    changed=true;
-                    ((bp::exam*)g_V::loaded_exam)->is_PUBLISHED=true;
-                }                
+                std::cout << "0:save and go back to dashboard" << std::endl;
             }
             else
             {
-                if (((bp::exam*)g_V::loaded_exam)->is_PUBLISHED!=false)
-                {                    
-                    changed=true;
-                    ((bp::exam*)g_V::loaded_exam)->is_PUBLISHED=false;
-                }
-                
-            } 
-            break;
-            case 2:
-            std::cout<<"enter new student list index:";
-            std::cin>>other_int_input;
-            if (((bp::exam*)g_V::loaded_exam)->exam_index!=other_int_input)
-            {
-                changed=true;
-                ((bp::exam*)g_V::loaded_exam)->exam_index=other_int_input;
+                std::cout << "0:go back to dashboard" << std::endl;
             }
-            break;
-           default:
-           std::cout<<"invalid command"<<std::endl;
-           if (changed)
-           {
-            std::cout<<"saving changes"<<std::endl;
-            save_loaded_exam();
-           }
-           std::cout<<"going back to dashborad"<<std::endl;
-           return;            
-            break;
-           }
+            std::cout << "1:change change publicity" << std::endl;
+            std::cout << "2:change student list index" << std::endl;
+            int input;
+            std::cin >> input;
+            char char_input;
+            int other_int_input;
+            switch (input)
+            {
+            case 0:
+                if (changed)
+                {
+                    std::cout << "saving changes" << std::endl;
+                    save_loaded_exam();
+                }
+                std::cout << "going back to dashborad" << std::endl;
+                return;
+                break;
+            case 1:
+                std::cout << "change publicity to(t/f):";
+                std::cin >> char_input;
+                if (char_input == 't')
+                {
+
+                    if (((bp::exam*)g_V::loaded_exam)->is_PUBLISHED != true)
+                    {
+                        changed = true;
+                        ((bp::exam*)g_V::loaded_exam)->is_PUBLISHED = true;
+                    }
+                }
+                else
+                {
+                    if (((bp::exam*)g_V::loaded_exam)->is_PUBLISHED != false)
+                    {
+                        changed = true;
+                        ((bp::exam*)g_V::loaded_exam)->is_PUBLISHED = false;
+                    }
+
+                }
+                break;
+            case 2:
+                std::cout << "enter new student list index:";
+                std::cin >> other_int_input;
+                if (((bp::exam*)g_V::loaded_exam)->exam_index != other_int_input)
+                {
+                    changed = true;
+                    ((bp::exam*)g_V::loaded_exam)->exam_index = other_int_input;
+                }
+                break;
+            default:
+                std::cout << "invalid command" << std::endl;
+                if (changed)
+                {
+                    std::cout << "saving changes" << std::endl;
+                    save_loaded_exam();
+                }
+                std::cout << "going back to dashborad" << std::endl;
+                return;
+                break;
+            }
         }
-      
+
     }
 
     std::string* exam_names = nullptr;
 };
 //
+int* get_student_mode_slin()
+{
+    return &g_V::student_mode_stu_l_index;
+}
 void bp::set_loaded_s_l(bp::Array<int>& temp_s_list)
 {
     if ((bp::Array<int>*)g_V::loaded_s_l)
     {
         delete (bp::Array<int>*)g_V::loaded_s_l;
     }
-    g_V::loaded_s_l = (void*)(new bp::Array<int>(temp_s_list));
+    g_V::loaded_s_l = new bp::Array<int>(temp_s_list);
 }
 void* clear_loaded_exam()
 {
@@ -1177,14 +1179,14 @@ int main()
         temp_name += std::to_string(i);
         std::string temp_password = "pass";
         temp_password += std::to_string(i);
-        simple_daneshjo temp_person(i,temp_name, temp_password);
+        simple_daneshjo temp_person(i, temp_name, temp_password);
         _students.push(temp_person);
     }
     //seting up the login system
     teachers = &_teachers;
     students = &_students;
     teachers_size = _teachers_size;
-    students_size = students_size;
+    students_size = _students_size;
 
     /////////login
     login_system();
@@ -1326,8 +1328,8 @@ void enter_dashboard(bool is_teacher, person* _persone)
                 {
                     if (g_V::exam_names)
                     {
-                        delete []g_V::exam_names;
-                    }                    
+                        delete[]g_V::exam_names;
+                    }
                     g_V::exam_names = new std::string[g_V::number_of_exams];
                     std::string _exam_name = {};
                     void* _ptr = &_exam_name;
@@ -1358,18 +1360,18 @@ void enter_dashboard(bool is_teacher, person* _persone)
                 }
                 //load that exam
                 {
-                    g_V::loaded_exam_index=other_input;
+                    g_V::loaded_exam_index = other_input;
                     std::string file_name = "exam" + std::to_string(other_input);
                     std::string file_path = "./exams/";
                     if (((bp::exam*)g_V::loaded_exam))
                     {
                         delete ((bp::exam*)g_V::loaded_exam);
-                    }                    
+                    }
                     g_V::loaded_exam = new bp::exam(1);
                     handle_file(bp::save_load_funcs::exam_load, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, g_V::loaded_exam);
                 }
                 //show show that exam to the user
-                g_V::show_loaded_exam();                       
+                g_V::show_loaded_exam();
                 break;
             case 3:
                 //student lists
@@ -1417,22 +1419,25 @@ void enter_dashboard(bool is_teacher, person* _persone)
     }
     else //its a student
     {
-      bool keep_loop_going = true;
+        bool keep_loop_going = true;
         while (keep_loop_going)
         {
             std::cout << "-1 : log out and exit application" << '\n';
             std::cout << "0 : log out" << '\n';
             std::cout << "1 : participate in an exam" << '\n';
-            std::cout << "2 : exam history" << '\n';            
-            std::cout << "3 : exam resualts" << std::endl;            
+            std::cout << "2 : exam history" << '\n';
+            std::cout << "3 : exam resualts" << std::endl;
             int command;
             std::cin >> command;
             int other_input;
             std::vector<int> _student_mode_exam_vector;
             std::vector<int> _stu_l_vector;
-            int stundet_id=((simple_daneshjo*)_persone)->shomare_daneshjoii;
-            bool found_currect_number=false;
+            int stundet_id = ((simple_daneshjo*)_persone)->shomare_daneshjoii;
+            bool found_currect_number = false;
             int size;
+            std::string file_name;
+            std::string _path = "./student_lists/";
+            std::string _exam_name = {};
             switch (command)
             {
             case -1:
@@ -1449,71 +1454,70 @@ void enter_dashboard(bool is_teacher, person* _persone)
                 return;
                 break;
             case 1:
-               //
+                //
                 break;
             case 2:
                 //exam history
                 //load all studnet list and see which on this student is in
                 //create a vector of maching student lists
-                  
+
                 //load exam number file
                 load_studnt_list_n_f();
                 //load that many studnet lists
-                 for (int i = 0; i < g_V::number_of_s_lists; i++)
+                for (int i = 0; i < g_V::number_of_s_lists; i++)
+                {
+                    file_name = std::to_string(i);                   
+
+                    handle_file(bp::save_load_funcs::students_list_load, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete);
+                    size = g_V::loaded_s_l->get_size();
+                    for (int j = 0; j < size; j++)
                     {
-                        std::string file_name = std::to_string(i);
-                        file_name += std::to_string(i);
-                        std::string _path = "./student_lists/";
-                        handle_file(bp::save_load_funcs::students_list_load, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete); 
-                        size=((std::vector<int>*)g_V::loaded_s_l)->size();                        
-                        for (int j = 0; j <size; j++)
+                        if ((*(g_V::loaded_s_l))[j] == stundet_id)
                         {
-                            if ((*((std::vector<int>*)g_V::loaded_s_l))[j]==stundet_id)
-                            {
-                                _stu_l_vector.push_back(i);
-                                break;
-                            }
-                            
-                        }                                              
+                            _student_mode_exam_vector.push_back(i);
+                            break;
+                        }
+
                     }
+                }
                 //load that number of exam names
                 {
                     if (g_V::exam_names)
                     {
-                        delete []g_V::exam_names;
-                    }                    
+                        delete[]g_V::exam_names;
+                    }
                     g_V::exam_names = new std::string[g_V::number_of_exams];
-                    std::string _exam_name = {};
+
                     void* _ptr = &_exam_name;
                     for (int i = 0; i < g_V::number_of_exams; i++)
                     {
-                        std::string file_name = "exam";
+                        file_name = "exam";
                         file_name += std::to_string(i);
                         std::string _path = "./exams/";
                         handle_file(bp::save_load_funcs::load_exam_name_and_sl_index, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete, _ptr);
                         g_V::exam_names[i] = _exam_name;
-                        size=_stu_l_vector.size();
-                        int loaded_exam_studnet_list=*get_student_mode_slin();
+                        size = _stu_l_vector.size();
+                        int loaded_exam_studnet_list = *get_student_mode_slin();
                         for (int j = 0; i < size; i++)
                         {
-                            if (loaded_exam_studnet_list==_stu_l_vector[j])
+                            if (loaded_exam_studnet_list == _stu_l_vector[j])
                             {
                                 _student_mode_exam_vector.push_back(i);
                                 break;
                             }
-                            
+
                         }
-                        
+
                     }
                 }
-                
-                
-                
+
+
+
                 //show that many number of exams
                 //show the exam names
                 std::cout << "-1 :go back" << std::endl;
                 std::cout << "exams:" << std::endl;
-                size=_student_mode_exam_vector.size();
+                size = _student_mode_exam_vector.size();
                 for (int i = 0; i < size; i++)
                 {
                     std::cout << i << " :" << _student_mode_exam_vector[i] << std::endl;
@@ -1527,34 +1531,34 @@ void enter_dashboard(bool is_teacher, person* _persone)
                     break;
                 }
                 //load that exam
-                
-                {   
-                    
+
+                {
+
                     for (int i = 0; i < size; i++)
                     {
-                        if (other_input==_student_mode_exam_vector[i])
+                        if (other_input == _student_mode_exam_vector[i])
                         {
-                            found_currect_number=true;
-                            g_V::loaded_exam_index=other_input;
+                            found_currect_number = true;
+                            g_V::loaded_exam_index = other_input;
                             std::string file_name = "exam" + std::to_string(other_input);
                             std::string file_path = "./exams/";
                             if (((bp::exam*)g_V::loaded_exam))
                             {
                                 delete ((bp::exam*)g_V::loaded_exam);
-                            }                    
+                            }
                             g_V::loaded_exam = new bp::exam(1);
                             handle_file(bp::save_load_funcs::exam_load, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, g_V::loaded_exam);
                             //show show that exam to the user
                             g_V::show_loaded_exam(false);
                             break;
-                        }                        
-                    }                                           
-                }               
-                 if (!found_currect_number)
-                   {
-                     std::cout << "going back" << std::endl;
-                   }                       
-                break;                      
+                        }
+                    }
+                }
+                if (!found_currect_number)
+                {
+                    std::cout << "going back" << std::endl;
+                }
+                break;
             default:
                 std::cout << "invalid command. try again" << std::endl;
                 break;
