@@ -4,6 +4,7 @@
 #include<sstream>
 #include<vector>
 #include <utility>
+#include<chrono>
 class person
 {
 public:
@@ -41,6 +42,8 @@ void load_studnt_list_n_f();
 int give_num_e();
 void* clear_loaded_exam();
 int* get_student_mode_slin();
+std::string* get_g_v_loaded_s_awnser_str();
+std::vector<std::string>* get_g_v_awnsers_str_ptr();
 namespace bp
 {
 
@@ -501,8 +504,9 @@ namespace bp
             _istream >> size;
         }
         //exam
-        void sudent_exam_awnser_save(void* ptr_istream,std::string* _g_v_loaded_s_awnser_str)
+        void sudent_exam_awnser_load(void* ptr_istream)
         {
+          std::string* _g_v_loaded_s_awnser_str=get_g_v_loaded_s_awnser_str();
           std::istream& _istream = *((std::istream*)ptr_istream);
           *_g_v_loaded_s_awnser_str="";
           std::string temp_str;
@@ -511,8 +515,9 @@ namespace bp
             *_g_v_loaded_s_awnser_str+=temp_str;
           }          
         }
-        void sudent_exam_awnser_save(void* ptr_ostream, void* _loaded_exam,std::string* awnsers_str_ptr)
+        void sudent_exam_awnser_save(void* ptr_ostream, void* _loaded_exam)
         {
+            std::vector<std::string>* awnsers_str_ptr=get_g_v_awnsers_str_ptr();
             std::ostream& _ostream = *((std::ostream*)ptr_ostream);
             std::string out_string = {};
             exam* e_ptr = (exam*)_loaded_exam;
@@ -520,8 +525,9 @@ namespace bp
             int exam_size = e_ptr->number_of_questions();
             for (int i = 0; i < exam_size; i++)
             {
+                out_string += '\n';
                 out_string += e_ptr->questions[i].question_str += '\n';                
-                out_string += '\n';                
+                                
                 out_string += std::to_string(e_ptr->questions[i].score) + '\n';
                 if (e_ptr->questions[i].is_test)//its a test
                 {
@@ -554,7 +560,7 @@ namespace bp
                     out_string += e_ptr->questions[i].string_answer + '\n';
                 }
                 ///adding the awnsers
-                out_string+="student awnser: "+awnsers_str_ptr[i]+'\n';
+                out_string+="student awnser: "+(*awnsers_str_ptr)[i]+'\n';
             }
             _ostream << out_string;
         }        
@@ -876,7 +882,10 @@ namespace bp
                 break;
             case bp::save_load_funcs::students_list_n_l:
                 bp::file::student_list_number_reload(&_istream, _ptr);
-                break;;
+                break;
+            case bp::save_load_funcs::sudent_exam_awnser_load:
+                bp::file::sudent_exam_awnser_load(&_istream);
+                break;
             default:
                 std::cout << "error: invalid file state" << std::endl;
                 exit(1);
@@ -911,6 +920,9 @@ namespace bp
             case bp::save_load_funcs::students_list_save:
                 bp::file::student_list_f_save(&_ostream, _ptr);
                 break;
+            case bp::save_load_funcs::sudent_exam_awnser_save:
+                bp::file::sudent_exam_awnser_save(&_ostream,_ptr);
+                break;
             default:
                 std::cout << "error: invalid file state" << std::endl;
                 exit(1);
@@ -928,6 +940,8 @@ int students_size = -1;
 //load and save files
 namespace g_V
 {
+    std::vector<std::string> awnsers_str_ptr;
+    std::string g_v_loaded_s_awnser_str;
     int student_mode_stu_l_index = 0;
     int loaded_exam_index = -1;
     int number_of_s_lists = 0;
@@ -1004,7 +1018,7 @@ namespace g_V
     }
  
     void edit_loaded_exam();
-    void show_loaded_exam(bool teacher_view = true)
+    void show_loaded_exam(bool teacher_view = true,std::string shomre_daneshjoii={})
     {
         if (loaded_exam)//an exam is loaded
         {
@@ -1070,14 +1084,16 @@ namespace g_V
             }
             else
             {
-                //staring the timer
+                
                 
                 //awnser the questions
                 std::vector<std::string> awnser_vector(exam_size);
                 for (int i = 0; i < exam_size; i++)
                 {
                     awnser_vector[i]={};
-                }                
+                }          
+                //staring the timer
+                const auto start{ std::chrono::steady_clock::now() };          
                 while (true)
                 {
                     std::cout<<"-1:submit exam"<<'\n';
@@ -1089,9 +1105,8 @@ namespace g_V
                     std::cin>>input;
                     if (input==-1)
                     {
-                        ///check for the time
-
-                        //if it is ok save and go back to dashborad
+                       //exit the loop
+                       break;
                     }
                     if (input<exam_size)
                     {
@@ -1104,11 +1119,29 @@ namespace g_V
                     else
                     {
                         std::cout<<"-----------------------\n"<<std::endl<<"invalid question number"<<std::endl<<"-----------------------\n"<<std::endl;
-                    }                   
-                   
-                    
+                    }                 
+                                      
                 }
-                
+                const auto end{ std::chrono::steady_clock::now() };
+                const std::chrono::duration<double> elapsed_seconds{ end - start };
+                if (elapsed_seconds.count()<((e_ptr->total_time*60)+10))
+                {
+                    (*get_g_v_awnsers_str_ptr())=awnser_vector;
+                }
+                else
+                {
+                    for (int i = 0; i < exam_size; i++)
+                    {
+                    awnser_vector[i]={};
+                    } 
+                    (*get_g_v_awnsers_str_ptr())=awnser_vector;
+                }
+                //now handle file
+                {
+                    std::string file_name="exam"+std::to_string(g_V::loaded_exam_index)+"student"+shomre_daneshjoii;
+                    std::string path="./exam_student_awnsers/";
+                    bp::handle_file(bp::save_load_funcs::sudent_exam_awnser_save,file_name,bp::save_load_state::save,path,bp::_delete,e_ptr);
+                }
             }
         }
         else // its nullptr and not loaded
@@ -1245,6 +1278,14 @@ namespace g_V
 int* get_student_mode_slin()
 {
     return &g_V::student_mode_stu_l_index;
+}
+std::string* get_g_v_loaded_s_awnser_str()
+{
+    return &g_V::g_v_loaded_s_awnser_str;
+}
+std::vector<std::string>* get_g_v_awnsers_str_ptr()
+{
+    return &g_V::awnsers_str_ptr;
 }
 void bp::set_loaded_s_l(bp::Array<int>& temp_s_list)
 {
@@ -1658,7 +1699,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
                             g_V::loaded_exam = new bp::exam(1);
                             handle_file(bp::save_load_funcs::exam_load, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, g_V::loaded_exam);
                             //show show that exam to the user
-                            g_V::show_loaded_exam(false);
+                            g_V::show_loaded_exam(false,std::to_string(((simple_daneshjo*)_persone)->shomare_daneshjoii));
                             break;
                         }
                     }
