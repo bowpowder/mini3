@@ -46,7 +46,7 @@ namespace bp
 
     enum save_load_funcs
     {
-        students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name, load_exam_name_and_sl_index
+      sudent_exam_awnser_load,sudent_exam_awnser_save, students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name, load_exam_name_and_sl_index
     };
     enum save_load_state
     {
@@ -490,7 +490,64 @@ namespace bp
             std::istream& _istream = *((std::istream*)ptr_istream);
             _istream >> size;
         }
-        //exam        
+        //exam
+        void sudent_exam_awnser_save(void* ptr_istream,std::string* _g_v_loaded_s_awnser_str)
+        {
+          std::istream& _istream = *((std::istream*)ptr_istream);
+          *_g_v_loaded_s_awnser_str="";
+          std::string temp_str;
+          while (std::getline(_istream>>std::ws,temp_str))
+          {
+            *_g_v_loaded_s_awnser_str+=temp_str;
+          }          
+        }
+        void sudent_exam_awnser_save(void* ptr_ostream, void* _loaded_exam,std::string* awnsers_str_ptr)
+        {
+            std::ostream& _ostream = *((std::ostream*)ptr_ostream);
+            std::string out_string = {};
+            exam* e_ptr = (exam*)_loaded_exam;
+            out_string += ((exam*)_loaded_exam)->exam_name + '\n';               
+            int exam_size = e_ptr->number_of_questions();
+            for (int i = 0; i < exam_size; i++)
+            {
+                out_string += e_ptr->questions[i].question_str += '\n';                
+                out_string += '\n';                
+                out_string += std::to_string(e_ptr->questions[i].score) + '\n';
+                if (e_ptr->questions[i].is_test)//its a test
+                {
+                    std::string out_char = {};
+                    out_string+="currect awnser:";
+                    switch (e_ptr->questions[i].currect_anwser)
+                    {
+                    case bp::posible_test_awnsers::a:
+                        out_char = "a";
+                        break;
+                    case bp::posible_test_awnsers::b:
+                        out_char = "b";
+                        break;
+                    case bp::posible_test_awnsers::c:
+                        out_char = "c";
+                        break;
+                    case bp::posible_test_awnsers::d:
+                        out_char = "d";
+                        break;
+                    default:
+                        out_char = "b";
+                        break;
+                    }
+                    out_string += out_char;
+                    out_string += '\n';
+
+                }
+                else //its descriptive
+                {
+                    out_string += e_ptr->questions[i].string_answer + '\n';
+                }
+                ///adding the awnsers
+                out_string+="student awnser: "+awnsers_str_ptr[i]+'\n';
+            }
+            _ostream << out_string;
+        }        
         void exam_save(void* ptr_ostream, void* _loaded_exam)
         {
             std::ostream& _ostream = *((std::ostream*)ptr_ostream);
