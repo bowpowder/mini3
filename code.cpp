@@ -341,6 +341,16 @@ namespace bp
             }
             total_time = temp_int;
         }
+        void calculate_t_score()
+        {
+            int temp_int = 0;
+            int size = number_of_questions();
+            for (int i = 0; i < size; i++)
+            {
+                temp_int += questions[i].score;
+            }
+            total_score = temp_int;
+        }
         int number_of_questions()
         {
             return questions.size();
@@ -1038,11 +1048,7 @@ namespace g_V
                             break;
                         }
                         std::cout << "currect awnser :" << c_a << std::endl;
-                    }
-                    else
-                    {
-                        ////awnser the questions
-                    }
+                    }                   
                 }
                 else//its descriptive
                 {
@@ -1053,10 +1059,56 @@ namespace g_V
                 }
                 std::cout << "-----------------------------------------------" << std::endl;
             }
+            e_ptr->calculate_t_score();
+            e_ptr->calculate_t_time();
+            std::cout<<"exam time:"<<e_ptr->total_time<<std::endl;
+            std::cout<<"exam score:"<<e_ptr->total_score<<std::endl;
             std::cout << std::endl << std::endl;
             if (teacher_view)
             {
                 edit_loaded_exam();
+            }
+            else
+            {
+                //staring the timer
+                
+                //awnser the questions
+                std::vector<std::string> awnser_vector(exam_size);
+                for (int i = 0; i < exam_size; i++)
+                {
+                    awnser_vector[i]={};
+                }                
+                while (true)
+                {
+                    std::cout<<"-1:submit exam"<<'\n';
+                    std::cout<<"awnser questions with this tempelete"<<'\n';
+                    std::cout<<"question_number awnser+enter_key"<<'\n';
+                    std::cout<<"if its a test question right the currect test option insted of awnser text"<<std::endl;
+
+                    int input;
+                    std::cin>>input;
+                    if (input==-1)
+                    {
+                        ///check for the time
+
+                        //if it is ok save and go back to dashborad
+                    }
+                    if (input<exam_size)
+                    {
+                       
+                       std::string string_awnser{};
+                       std::getline(std::cin>>std::ws,string_awnser);
+                        awnser_vector[input]=string_awnser;
+                        std::cout<<"-----------------------\n"<<std::endl<<"set question "<<input<<"'s awser to "<<string_awnser<<std::endl<<"-----------------------\n";
+                    }
+                    else
+                    {
+                        std::cout<<"-----------------------\n"<<std::endl<<"invalid question number"<<std::endl<<"-----------------------\n"<<std::endl;
+                    }                   
+                   
+                    
+                }
+                
             }
         }
         else // its nullptr and not loaded
