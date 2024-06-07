@@ -1489,10 +1489,11 @@ void save_e_n_f(bool add_one_first)
 }
 void enter_dashboard(bool is_teacher, person* _persone)
 {
+    std::vector<std::string> partisipaters_list;
     if (is_teacher)
     {
         bool keep_loop_going = true;
-        std::vector<std::string> partisipaters_list;
+        
         int size;        
         bool eteraz_existed;
         bool found_student_in_score_lists;
@@ -1871,7 +1872,8 @@ void enter_dashboard(bool is_teacher, person* _persone)
             std::cout << "0 : log out" << '\n';
             std::cout << "1 : participate in an exam" << '\n';
             std::cout << "2 : exam history" << '\n';
-            std::cout << "3 : sabte eteraz" << std::endl;
+            std::cout << "3 : sabte eteraz" << '\n';
+            std::cout << "4 : expierd exams" <<std::endl;
             int command;
             std::cin >> command;
             int other_input;
@@ -1890,6 +1892,9 @@ void enter_dashboard(bool is_teacher, person* _persone)
             int size_of_indexes;
             bool eteraz_exists=false;
             std::string eteraz_save_string;
+            int size_size;
+            bool is_in_participaters=false;
+            int expired_exams_count=0;
             switch (command)
             {
             case -1:
@@ -2127,6 +2132,80 @@ void enter_dashboard(bool is_teacher, person* _persone)
                         std::cout<<"invalid index going back"<<std::endl;
                     }
                     break;
+                case 4:
+                std::cout<<"-------------------------------"<<std::endl;
+                 //load exam number file
+                load_e_n_f();
+                //load that number of exam names
+                {
+                    if (g_V::exam_names)
+                    {
+                        delete[]g_V::exam_names;
+                    }
+                    g_V::exam_names = new std::string[g_V::number_of_exams];
+                    std::string _exam_name = {};
+                    void* _ptr = &_exam_name;
+                    for (int i = 0; i < g_V::number_of_exams; i++)
+                    {
+                        std::string file_name = "exam";
+                        file_name += std::to_string(i);
+                        std::string _path = "./exams/";
+                        handle_file(bp::save_load_funcs::load_exam_name, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete, _ptr);
+                        g_V::exam_names[i] = _exam_name;
+                    }
+                }
+                //show that many number of exams
+                //show the exam names                
+                std::cout << "expired exams:" << std::endl;
+                expired_exams_count=0;
+                for (int i = 0; i < g_V::number_of_exams; i++)
+                {
+                    //now cwe see if its expired or not
+                    //load that exam
+                    {
+                        g_V::loaded_exam_index = i;
+                        std::string file_name = "exam" + std::to_string(i);
+                        std::string file_path = "./exams/";
+                        if (((bp::exam*)g_V::loaded_exam))
+                        {
+                            delete ((bp::exam*)g_V::loaded_exam);
+                        }
+                        g_V::loaded_exam = new bp::exam(1);
+                        handle_file(bp::save_load_funcs::exam_load, file_name, bp::save_load_state::load, file_path, bp::delete_old_f_state::dont_delete, g_V::loaded_exam);
+                    }
+                   if(!(((bp::exam*)g_V::loaded_exam)->is_PUBLISHED))
+                   {
+                    //more ifs
+                    {
+                        std::string file_name="exam"+std::to_string(i)+"participaters";
+                        std::string file_path="./exam_participaters/";
+                        partisipaters_list.clear();
+                        bp::handle_file(bp::exam_load_patcipater_list,file_name,bp::save_load_state::load,file_path,bp::delete_old_f_state::dont_delete,&partisipaters_list);
+                    }
+                    is_in_participaters=false;
+                    for (int i = 0; i < partisipaters_list.size(); i++)
+                    {
+                        if (partisipaters_list[i]==_shomare_danseshjoii)
+                        {
+                            is_in_participaters=true;
+                            break;
+                        }
+                        
+                    }
+                    if (!is_in_participaters)
+                    {
+                        expired_exams_count++;
+                        std::cout << i << " :" << g_V::exam_names[i] << std::endl;
+                    }                    
+                   }
+                    
+                }
+                if (!expired_exams_count)
+                {
+                   std::cout<<"there wasent any expired exam here"<<std::endl;
+                }
+                std::cout<<"-------------------------------"<<std::endl;
+                break;
             default:
                 std::cout << "invalid command. try again" << std::endl;
                 break;
