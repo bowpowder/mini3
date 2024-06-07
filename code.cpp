@@ -1505,12 +1505,14 @@ void enter_dashboard(bool is_teacher, person* _persone)
             std::cout << "3 : student lists" << '\n';
             std::cout << "4 : exam resualts" << std::endl;
             std::cout << "5 : create new student list" << std::endl;
-            std::cout<<"6:see student awnsers"<<std::endl;
+            std::cout << "6 : see student awnsers"<<std::endl;
+            std::cout << "7 : see student ranks"<<std::endl;
             int command;
             std::cin >> command;
             int other_input;   
             int other_other_int_input;   
-            bool student_score_file_exists=false;      
+            bool student_score_file_exists=false;  
+            std::tuple<std::string,int> temp_sort_tuple;    
             switch (command)
             {
             case -1:
@@ -1566,6 +1568,11 @@ void enter_dashboard(bool is_teacher, person* _persone)
                 if (other_input == -1)
                 {//stop right here and go back                  
                     std::cout << "going back" << std::endl;
+                    break;
+                }
+                if (!(other_input<g_V::number_of_exams))
+                {
+                    std::cout<<"invalid index going back"<<std::endl;
                     break;
                 }
                 //load that exam
@@ -1764,6 +1771,90 @@ void enter_dashboard(bool is_teacher, person* _persone)
                     break;
                 }
                 
+            break;
+            case 7:
+              //exam history                
+                //load exam number file
+                load_e_n_f();
+                //load that number of exam names
+                {
+                    if (g_V::exam_names)
+                    {
+                        delete[]g_V::exam_names;
+                    }
+                    g_V::exam_names = new std::string[g_V::number_of_exams];
+                    std::string _exam_name = {};
+                    void* _ptr = &_exam_name;
+                    for (int i = 0; i < g_V::number_of_exams; i++)
+                    {
+                        std::string file_name = "exam";
+                        file_name += std::to_string(i);
+                        std::string _path = "./exams/";
+                        handle_file(bp::save_load_funcs::load_exam_name, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete, _ptr);
+                        g_V::exam_names[i] = _exam_name;
+                    }
+                }
+                //show that many number of exams
+                //show the exam names
+                std::cout << "-1 :go back" << std::endl;
+                std::cout << "exams:" << std::endl;
+                for (int i = 0; i < g_V::number_of_exams; i++)
+                {
+                    std::cout << i << " :" << g_V::exam_names[i] << std::endl;
+                }
+                //let the user choose what exam they want to load
+
+                std::cin >> other_input;
+                if (other_input == -1)
+                {//stop right here and go back                  
+                    std::cout << "going back" << std::endl;
+                    break;
+                }
+                //load that exam student score file
+                if (other_input<g_V::number_of_exams)
+                {
+                    //cehck for files existtence
+                    {
+                        std::string file_name="exam"+std::to_string(other_input)+"scores";
+                        std::string file_path="./exam_student_scores/";
+                        bp::handle_file(bp::save_load_funcs::exam_resault_reload,file_name,bp::save_load_state::load,file_path,bp::delete_old_f_state::dont_delete,&student_score_file_exists);
+                    }
+                    if (student_score_file_exists)
+                    {
+                       //sort the list
+                       size=get_g_v_loaded_student_scores()->size();
+                       for (int i = 0; i < size; i++)
+                       {
+                        for (int j = i+1; j < size; j++)
+                        {
+                            if (std::get<1>((*get_g_v_loaded_student_scores())[i])>std::get<1>((*get_g_v_loaded_student_scores())[j]))
+                            {
+                                temp_sort_tuple=(*get_g_v_loaded_student_scores())[i];
+                                (*get_g_v_loaded_student_scores())[i]=(*get_g_v_loaded_student_scores())[j];
+                                (*get_g_v_loaded_student_scores())[j]=temp_sort_tuple;
+                            }
+                            
+                        }                        
+                       }
+                       //show the list
+                       std::cout<<"------------------------"<<std::endl;
+                       for (int i = 0; i < size; i++)
+                       {
+                        std::cout<<"student"<<std::get<0>((*get_g_v_loaded_student_scores())[i])<<": "<<std::to_string(std::get<1>((*get_g_v_loaded_student_scores())[i]))<<std::endl;
+                       }                       
+                    }
+                    else
+                    {
+                        std::cout<<"this exam dosent have a student_score file\n"<<"going back"<<std::endl;
+                    }
+                    
+                }
+                else
+                {
+                    std::cout<<"invalid index going back"<<std::endl;
+                    break;
+                }
+                std::cout<<"------------------------\n"<<"going back"<<std::endl;
             break;
             default:
                 std::cout << "invalid command. try again" << std::endl;
