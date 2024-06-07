@@ -45,12 +45,13 @@ int* get_student_mode_slin();
 std::string* get_g_v_loaded_s_awnser_str();
 std::vector<std::string>* get_g_v_awnsers_str_ptr();
 std::string* get_g_v_loaded_eteraz_string();
+std::vector<std::tuple<std::string,int>>* get_g_v_loaded_student_scores();
 namespace bp
 {
 
     enum save_load_funcs
     {
-     eteraz_save,eteraz_reload,exam_load_patcipater_list,exam_add_participater, sudent_exam_awnser_load,sudent_exam_awnser_save, students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name, load_exam_name_and_sl_index
+     exam_resault_save,exam_resault_reload,eteraz_save,eteraz_reload,exam_load_patcipater_list,exam_add_participater, sudent_exam_awnser_load,sudent_exam_awnser_save, students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name, load_exam_name_and_sl_index
     };
     enum save_load_state
     {
@@ -747,8 +748,9 @@ namespace bp
 
         }
         //exam resaults
-        void exam_resault_reload(std::istream* _istream_ptr, std::vector<std::tuple<int, int, int>>* _g_v_loaded_student_scores, bool* _g_v_loaded_stu_score_exists)
+        void exam_resault_reload(std::istream* _istream_ptr, bool* _g_v_loaded_stu_score_exists)
         {
+            std::vector<std::tuple<std::string, int>>* _g_v_loaded_student_scores=get_g_v_loaded_student_scores();   
             *_g_v_loaded_stu_score_exists = true;
             std::string in_string{};
             //start check
@@ -759,11 +761,10 @@ namespace bp
                 while (std::getline(*_istream_ptr >> std::ws, in_string))
                 {
                     std::stringstream ss(in_string);
-                    int temp_student_id;
-                    int temp_student_e_score;
-                    int temp_student_t_score;
-                    ss >> temp_student_id >> temp_student_e_score >> temp_student_t_score;
-                    _g_v_loaded_student_scores->push_back(std::make_tuple(temp_student_id, temp_student_e_score, temp_student_t_score));
+                    std::string temp_student_id;                    
+                    int temp_student_score;
+                    ss >> temp_student_id >> temp_student_score ;
+                    _g_v_loaded_student_scores->push_back(std::make_tuple(temp_student_id, temp_student_score));
                     
                 }
             }
@@ -773,18 +774,16 @@ namespace bp
                 return;
             }
         }
-        void exam_resault_save(std::ostream* _ostream_ptr, std::vector<std::tuple<int, int, int>>* _g_v_loaded_student_scores)
+        void exam_resault_save(std::ostream* _ostream_ptr )
         {
-
-            std::string out_string{};
-            //start check
-            out_string += "start" + '\n';
+            std::vector<std::tuple<std::string, int>>* _g_v_loaded_student_scores=get_g_v_loaded_student_scores();            
+            std::string out_string{"start\n"};//start check           
+            
             int number = _g_v_loaded_student_scores->size();
             for (int i = 0; i < number; i++)
             {
-                out_string += std::to_string(std::get<0>((*_g_v_loaded_student_scores)[i])) + '\n';
-                out_string += std::to_string(std::get<1>((*_g_v_loaded_student_scores)[i])) + '\n';
-                out_string += std::to_string(std::get<2>((*_g_v_loaded_student_scores)[i])) + '\n';
+                out_string += std::get<0>((*_g_v_loaded_student_scores)[i])+ ' ';
+                out_string += std::to_string(std::get<1>((*_g_v_loaded_student_scores)[i])) + '\n';                
             }
             *_ostream_ptr << out_string;
         }
@@ -910,6 +909,9 @@ namespace bp
                 case bp::save_load_funcs::eteraz_reload:
                 bp::file::eteraz_reload(&_istream,get_g_v_loaded_eteraz_string(),(bool*)_ptr);
                 break;
+                case bp::save_load_funcs::exam_resault_reload:
+                bp::file::exam_resault_reload(&_istream,(bool*)_ptr);
+                break;                
             default:
                 std::cout << "error: invalid file state" << std::endl;
                 exit(1);
@@ -953,6 +955,10 @@ namespace bp
             case bp::save_load_funcs::eteraz_save:
                 bp::file::eteraz_save(&_ostream,(std::string*)_ptr);
                 break;
+            case bp::save_load_funcs::exam_resault_save:
+                bp::file::exam_resault_save(&_ostream);
+                break;
+                
             default:
                 std::cout << "error: invalid file state" << std::endl;
                 exit(1);
@@ -970,6 +976,7 @@ int students_size = -1;
 //load and save files
 namespace g_V
 {
+    std::vector<std::tuple<std::string, int>> g_v_loaded_student_scores;
     std::string g_v_loaded_eteraz_string;
     std::vector<std::string> awnsers_str_ptr;
     std::string g_v_loaded_s_awnser_str;
@@ -1328,6 +1335,11 @@ std::vector<std::string>* get_g_v_awnsers_str_ptr()
 {
     return &g_V::awnsers_str_ptr;
 }
+std::vector<std::tuple<std::string,int>>* get_g_v_loaded_student_scores()
+{
+    return &g_V::g_v_loaded_student_scores;
+}
+
 void bp::set_loaded_s_l(bp::Array<int>& temp_s_list)
 {
     if ((bp::Array<int>*)g_V::loaded_s_l)
@@ -1483,6 +1495,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
         std::vector<std::string> partisipaters_list;
         int size;        
         bool eteraz_existed;
+        bool found_student_in_score_lists;
         while (keep_loop_going)
         {
             std::cout << "-1 : log out and exit application" << '\n';
@@ -1495,7 +1508,9 @@ void enter_dashboard(bool is_teacher, person* _persone)
             std::cout<<"6:see student awnsers"<<std::endl;
             int command;
             std::cin >> command;
-            int other_input;            
+            int other_input;   
+            int other_other_int_input;   
+            bool student_score_file_exists=false;      
             switch (command)
             {
             case -1:
@@ -1688,8 +1703,8 @@ void enter_dashboard(bool is_teacher, person* _persone)
                            std::cout<<"hasent found a \"eteraz\" file"<<std::endl;
                         }
                         std::cout<<"score?(-1:going back):";
-                        std::cin>>other_input;
-                        if (other_input==-1)
+                        std::cin>>other_other_int_input;
+                        if (other_other_int_input==-1)
                         {
                             std::cout<<"going back"<<std::endl;
                             break;
@@ -1697,6 +1712,44 @@ void enter_dashboard(bool is_teacher, person* _persone)
                         else
                         {
                             //load student score list file
+                            //get_g_v_loaded_student_scores
+                            {
+                                std::string file_name="exam"+std::to_string(other_input)+"scores";
+                                std::string file_path="./exam_student_scores/";
+                                bp::handle_file(bp::save_load_funcs::exam_resault_reload,file_name,bp::save_load_state::load,file_path,bp::delete_old_f_state::dont_delete,&student_score_file_exists);
+                            }
+                            if (student_score_file_exists)
+                            {
+                                //search for student
+                                size=get_g_v_loaded_student_scores()->size();
+                                found_student_in_score_lists=false;
+                                for (int i = 0; i < size; i++)
+                                {
+                                    if (partisipaters_list[other_input]==std::get<0>((*get_g_v_loaded_student_scores())[i]))
+                                    {
+                                        found_student_in_score_lists=true;
+                                        (*get_g_v_loaded_student_scores())[i]=std::make_tuple(partisipaters_list[other_input],other_other_int_input);                                        
+                                        break;
+                                    }                                    
+                                }
+                                if (!found_student_in_score_lists)///add that manually
+                                {
+                                    get_g_v_loaded_student_scores()->push_back(std::make_tuple(partisipaters_list[other_input],other_other_int_input));
+                                }                               
+                                
+                            }
+                            else//it dosent exist its new
+                            {
+                            get_g_v_loaded_student_scores()->clear();
+                            get_g_v_loaded_student_scores()->push_back(std::make_tuple(partisipaters_list[other_input],other_other_int_input));
+                            }
+                            //now save it to the file
+                            {
+                                std::string file_name="exam"+std::to_string(other_input)+"scores";
+                                std::string file_path="./exam_student_scores/";
+                                bp::handle_file(bp::save_load_funcs::exam_resault_save,file_name,bp::save_load_state::save,file_path,bp::delete_old_f_state::_delete);
+                            }
+                            std::cout<<"set score to "<<other_other_int_input<<'\n'<<"going back"<<std::endl;
                         }
                             
                     }                    
