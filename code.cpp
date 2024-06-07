@@ -49,7 +49,7 @@ namespace bp
 
     enum save_load_funcs
     {
-      sudent_exam_awnser_load,sudent_exam_awnser_save, students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name, load_exam_name_and_sl_index
+     exam_load_patcipater_list,exam_add_participater, sudent_exam_awnser_load,sudent_exam_awnser_save, students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name, load_exam_name_and_sl_index
     };
     enum save_load_state
     {
@@ -515,6 +515,23 @@ namespace bp
             *_g_v_loaded_s_awnser_str+=temp_str;
           }          
         }
+        void exam_add_participater(void* ptr_ostream,std::string* shomare_daneshjoii)
+        {
+            std::ostream& _ostream = *((std::ostream*)ptr_ostream);
+            std::string out_string{*shomare_daneshjoii+'\n'};
+            _ostream<<out_string;
+        }
+        void exam_load_patcipater_list(void* ptr_istream,std::vector<std::string>* string_vector_ptr)
+        {
+            std::istream& _istream = *((std::istream*)ptr_istream);
+            string_vector_ptr->clear();
+            std::string temp_string;
+            while (std::getline(_istream>>std::ws,temp_string))
+            {
+                string_vector_ptr->push_back(temp_string);
+            }
+            
+        }
         void sudent_exam_awnser_save(void* ptr_ostream, void* _loaded_exam)
         {
             std::vector<std::string>* awnsers_str_ptr=get_g_v_awnsers_str_ptr();
@@ -886,6 +903,9 @@ namespace bp
             case bp::save_load_funcs::sudent_exam_awnser_load:
                 bp::file::sudent_exam_awnser_load(&_istream);
                 break;
+                case bp::save_load_funcs::exam_load_patcipater_list:
+                bp::file::exam_load_patcipater_list(&_istream,(std::vector<std::string>*)_ptr);
+                break;
             default:
                 std::cout << "error: invalid file state" << std::endl;
                 exit(1);
@@ -922,6 +942,9 @@ namespace bp
                 break;
             case bp::save_load_funcs::sudent_exam_awnser_save:
                 bp::file::sudent_exam_awnser_save(&_ostream,_ptr);
+                break;
+            case bp::save_load_funcs::exam_add_participater:
+                bp::file::exam_add_participater(&_ostream,(std::string*)_ptr);
                 break;
             default:
                 std::cout << "error: invalid file state" << std::endl;
@@ -1141,6 +1164,12 @@ namespace g_V
                     std::string file_name="exam"+std::to_string(g_V::loaded_exam_index)+"student"+shomre_daneshjoii;
                     std::string path="./exam_student_awnsers/";
                     bp::handle_file(bp::save_load_funcs::sudent_exam_awnser_save,file_name,bp::save_load_state::save,path,bp::_delete,e_ptr);
+                }
+                //add student to participated students
+                {
+                std::string file_name="exam"+std::to_string(g_V::loaded_exam_index)+"participaters";
+                std::string path="./exam_participaters/";
+                bp::handle_file(bp::save_load_funcs::exam_add_participater,file_name,bp::save_load_state::save,path,bp::delete_old_f_state::dont_delete,&shomre_daneshjoii);
                 }
             }
         }
