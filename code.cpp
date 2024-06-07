@@ -512,7 +512,7 @@ namespace bp
           std::string temp_str;
           while (std::getline(_istream>>std::ws,temp_str))
           {
-            *_g_v_loaded_s_awnser_str+=temp_str;
+            *_g_v_loaded_s_awnser_str+=temp_str+'\n';
           }          
         }
         void exam_add_participater(void* ptr_ostream,std::string* shomare_daneshjoii)
@@ -1617,6 +1617,11 @@ void enter_dashboard(bool is_teacher, person* _persone)
             std::string file_name;
             std::string _path = "./student_lists/";
             std::string _exam_name = {};
+            //shomare daneshjoii
+            std::string _shomare_danseshjoii{std::to_string(((simple_daneshjo*)_persone)->shomare_daneshjoii)};
+            std::vector<int> history_index_vector;
+            int int_st_input;
+            int size_of_indexes;
             switch (command)
             {
             case -1:
@@ -1631,12 +1636,9 @@ void enter_dashboard(bool is_teacher, person* _persone)
 
                 //return to loging system
                 return;
-                break;
+                break;            
             case 1:
-                //
-                break;
-            case 2:
-                //exam history
+                //participate in an exam
                 //load all studnet list and see which on this student is in
                 //create a vector of maching student lists
 
@@ -1737,6 +1739,55 @@ void enter_dashboard(bool is_teacher, person* _persone)
                 {
                     std::cout << "going back" << std::endl;
                 }
+                break;
+                case 2:
+                //exam history
+                //load exam number file
+                load_e_n_f();
+                //load that number of exam_patricipater_list files and add them if necessary                     
+                    history_index_vector.clear();
+                 for (int i = 0; i < g_V::number_of_exams; i++)
+                    {
+                        std::string file_name{"exam"+std::to_string(i)+"participaters"};                        
+                        std::string _path = "./exam_participaters/";
+                        std::vector<std::string> participater_list;
+                        handle_file(bp::save_load_funcs::exam_load_patcipater_list, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete,&participater_list);
+                        int size=participater_list.size();
+                        for (int j = 0; j < size; j++)
+                        {
+                            if (_shomare_danseshjoii==participater_list[j])
+                            {
+                                history_index_vector.push_back(i);
+                                break;
+                            }
+                            
+                        }                                                
+                    }
+                    //show exam_history avalible indexes                    
+                     size_of_indexes=history_index_vector.size();
+                    for (int i = 0; i < size_of_indexes; i++)
+                    {
+                        std::cout<<i<<':'<<"esam"<<history_index_vector[i]<<std::endl;
+                    }
+                    //now let them choose which they want to show on the screen
+                    
+                    std::cin>>int_st_input;
+                    if (int_st_input<size_of_indexes)
+                    {
+                        //now handle file
+                        {
+                            file_name="exam"+std::to_string(history_index_vector[int_st_input])+"student"+_shomare_danseshjoii;
+                            _path="./exam_student_awnsers/";
+                            bp::handle_file(bp::save_load_funcs::sudent_exam_awnser_load,file_name,bp::load,_path,bp::delete_old_f_state::dont_delete);
+                            std::cout<<"-------------------------"<<std::endl<<(*get_g_v_loaded_s_awnser_str())<<"-------------------------"<<std::endl;
+                            std::cout<<"going back"<<std::endl;
+                        }
+                    }
+                    else
+                    {
+                        std::cout<<"invalid index going back"<<std::endl;
+                    }
+                    
                 break;
             default:
                 std::cout << "invalid command. try again" << std::endl;
