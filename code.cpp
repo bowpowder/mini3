@@ -44,12 +44,13 @@ void* clear_loaded_exam();
 int* get_student_mode_slin();
 std::string* get_g_v_loaded_s_awnser_str();
 std::vector<std::string>* get_g_v_awnsers_str_ptr();
+std::string* get_g_v_loaded_eteraz_string();
 namespace bp
 {
 
     enum save_load_funcs
     {
-     exam_load_patcipater_list,exam_add_participater, sudent_exam_awnser_load,sudent_exam_awnser_save, students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name, load_exam_name_and_sl_index
+     eteraz_save,eteraz_reload,exam_load_patcipater_list,exam_add_participater, sudent_exam_awnser_load,sudent_exam_awnser_save, students_list_save, students_list_load, students_list_n_s, students_list_n_l, exam_save, exam_load, exam_n_s, exam_n_l, load_exam_name, load_exam_name_and_sl_index
     };
     enum save_load_state
     {
@@ -810,7 +811,7 @@ namespace bp
         {
             std::string out_str{};
             //adding start check str
-            out_str += "start" + '\n';
+            out_str += "start\n";
             out_str += *_g_v_loaded_eteraz;
             *_ostream_ptr << out_str;
         }
@@ -906,6 +907,9 @@ namespace bp
                 case bp::save_load_funcs::exam_load_patcipater_list:
                 bp::file::exam_load_patcipater_list(&_istream,(std::vector<std::string>*)_ptr);
                 break;
+                case bp::save_load_funcs::eteraz_reload:
+                bp::file::eteraz_reload(&_istream,get_g_v_loaded_eteraz_string(),(bool*)_ptr);
+                break;
             default:
                 std::cout << "error: invalid file state" << std::endl;
                 exit(1);
@@ -946,6 +950,9 @@ namespace bp
             case bp::save_load_funcs::exam_add_participater:
                 bp::file::exam_add_participater(&_ostream,(std::string*)_ptr);
                 break;
+            case bp::save_load_funcs::eteraz_save:
+                bp::file::eteraz_save(&_ostream,(std::string*)_ptr);
+                break;
             default:
                 std::cout << "error: invalid file state" << std::endl;
                 exit(1);
@@ -963,6 +970,7 @@ int students_size = -1;
 //load and save files
 namespace g_V
 {
+    std::string g_v_loaded_eteraz_string;
     std::vector<std::string> awnsers_str_ptr;
     std::string g_v_loaded_s_awnser_str;
     int student_mode_stu_l_index = 0;
@@ -1312,6 +1320,10 @@ std::string* get_g_v_loaded_s_awnser_str()
 {
     return &g_V::g_v_loaded_s_awnser_str;
 }
+std::string* get_g_v_loaded_eteraz_string()
+{
+    return &g_V::g_v_loaded_eteraz_string;
+}
 std::vector<std::string>* get_g_v_awnsers_str_ptr()
 {
     return &g_V::awnsers_str_ptr;
@@ -1605,7 +1617,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
             std::cout << "0 : log out" << '\n';
             std::cout << "1 : participate in an exam" << '\n';
             std::cout << "2 : exam history" << '\n';
-            std::cout << "3 : exam resualts" << std::endl;
+            std::cout << "3 : sabte eteraz" << std::endl;
             int command;
             std::cin >> command;
             int other_input;
@@ -1622,6 +1634,8 @@ void enter_dashboard(bool is_teacher, person* _persone)
             std::vector<int> history_index_vector;
             int int_st_input;
             int size_of_indexes;
+            bool eteraz_exists=false;
+            std::string eteraz_save_string;
             switch (command)
             {
             case -1:
@@ -1765,6 +1779,12 @@ void enter_dashboard(bool is_teacher, person* _persone)
                     }
                     //show exam_history avalible indexes                    
                      size_of_indexes=history_index_vector.size();
+                     if (!size_of_indexes)
+                     {
+                        std::cout<<"no available exam found for your request"<<std::endl;
+                        break;
+                     }
+                     
                     for (int i = 0; i < size_of_indexes; i++)
                     {
                         std::cout<<i<<':'<<"esam"<<history_index_vector[i]<<std::endl;
@@ -1789,6 +1809,70 @@ void enter_dashboard(bool is_teacher, person* _persone)
                     }
                     
                 break;
+                case 3:
+                //exam eteraz
+                 //load exam number file
+                load_e_n_f();
+                //load that number of exam_patricipater_list files and add them if necessary                     
+                    history_index_vector.clear();
+                 for (int i = 0; i < g_V::number_of_exams; i++)
+                    {
+                        std::string file_name{"exam"+std::to_string(i)+"participaters"};                        
+                        std::string _path = "./exam_participaters/";
+                        std::vector<std::string> participater_list;
+                        handle_file(bp::save_load_funcs::exam_load_patcipater_list, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete,&participater_list);
+                        int size=participater_list.size();
+                       
+                        for (int j = 0; j < size; j++)
+                        {
+                            if (_shomare_danseshjoii==participater_list[j])
+                            {
+                                //now we haveto check if we havent done that yet
+                                {
+                                    std::string file_name{"exam"+std::to_string(i)+"student"+_shomare_danseshjoii+"eteraz"};                        
+                                    std::string _path = "./exam_eterazha/";
+                                    bp::handle_file(bp::save_load_funcs::eteraz_reload,file_name,bp::save_load_state::load,_path,bp::delete_old_f_state::dont_delete,&eteraz_exists);
+                                    if (!eteraz_exists)
+                                    {
+                                        history_index_vector.push_back(i);
+                                    }                                    
+                                }
+                                
+                                break;
+                            }
+                            
+                        } 
+                    }
+                        //show exam_history avalible indexes                    
+                     size_of_indexes=history_index_vector.size();
+                      if (!size_of_indexes)
+                        {
+                        std::cout<<"no available exam found for your request"<<std::endl;
+                        break;
+                         }
+                    for (int i = 0; i < size_of_indexes; i++)
+                    {
+                        std::cout<<i<<':'<<"esam"<<history_index_vector[i]<<"eteraz"<<std::endl;
+                    }
+                    //now let them choose which they want to show on the screen                    
+                    std::cin>>int_st_input;
+                    if (int_st_input<size_of_indexes)
+                    {
+                        std::cout<<"enter what you want to save +enterkey:"<<std::endl;
+                        std::getline(std::cin>>std::ws,eteraz_save_string);
+                        //now handle file
+                        {
+                            std::string file_name{"exam"+std::to_string(history_index_vector[int_st_input])+"student"+_shomare_danseshjoii+"eteraz"};                        
+                            std::string _path = "./exam_eterazha/";
+                            bp::handle_file(bp::save_load_funcs::eteraz_save,file_name,bp::save_load_state::save,_path,bp::delete_old_f_state::_delete,&eteraz_save_string);                                                     
+                        }
+                        std::cout<<'\n'<<"------------------------"<<'\n'<<eteraz_save_string<<'\n'<<"------------------------"<<'\n'<<"going back"<<std::endl;
+                    }
+                    else
+                    {
+                        std::cout<<"invalid index going back"<<std::endl;
+                    }
+                    break;
             default:
                 std::cout << "invalid command. try again" << std::endl;
                 break;
