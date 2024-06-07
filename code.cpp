@@ -1480,6 +1480,9 @@ void enter_dashboard(bool is_teacher, person* _persone)
     if (is_teacher)
     {
         bool keep_loop_going = true;
+        std::vector<std::string> partisipaters_list;
+        int size;        
+        bool eteraz_existed;
         while (keep_loop_going)
         {
             std::cout << "-1 : log out and exit application" << '\n';
@@ -1489,9 +1492,10 @@ void enter_dashboard(bool is_teacher, person* _persone)
             std::cout << "3 : student lists" << '\n';
             std::cout << "4 : exam resualts" << std::endl;
             std::cout << "5 : create new student list" << std::endl;
+            std::cout<<"6:see student awnsers"<<std::endl;
             int command;
             std::cin >> command;
-            int other_input;
+            int other_input;            
             switch (command)
             {
             case -1:
@@ -1602,6 +1606,112 @@ void enter_dashboard(bool is_teacher, person* _persone)
             case 5:
                 g_V::creat_n_s_l();
                 break;
+            case 6:
+             //exam history                
+                //load exam number file
+                load_e_n_f();
+                //load that number of exam names
+                {
+                    if (g_V::exam_names)
+                    {
+                        delete[]g_V::exam_names;
+                    }
+                    g_V::exam_names = new std::string[g_V::number_of_exams];
+                    std::string _exam_name = {};
+                    void* _ptr = &_exam_name;
+                    for (int i = 0; i < g_V::number_of_exams; i++)
+                    {
+                        std::string file_name = "exam";
+                        file_name += std::to_string(i);
+                        std::string _path = "./exams/";
+                        handle_file(bp::save_load_funcs::load_exam_name, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete, _ptr);
+                        g_V::exam_names[i] = _exam_name;
+                    }
+                }
+                //show that many number of exams
+                //show the exam names
+                std::cout << "-1 :go back" << std::endl;
+                std::cout << "exams:" << std::endl;
+                for (int i = 0; i < g_V::number_of_exams; i++)
+                {
+                    std::cout << i << " :" << g_V::exam_names[i] << std::endl;
+                }
+                //let the user choose what exam they want to load
+
+                std::cin >> other_input;
+                if (other_input == -1)
+                {//stop right here and go back                  
+                    std::cout << "going back" << std::endl;
+                    break;
+                }
+                if (other_input<g_V::number_of_exams)
+                {
+                    {
+                        std::string file_name="exam"+std::to_string(other_input)+"participaters";
+                        std::string file_path="./exam_participaters/";
+                        partisipaters_list.clear();
+                        bp::handle_file(bp::exam_load_patcipater_list,file_name,bp::save_load_state::load,file_path,bp::delete_old_f_state::dont_delete,&partisipaters_list);
+                    }
+                    size=partisipaters_list.size();
+                    if (!size)
+                    {
+                        std::cout<<"found no avalable options"<<std::endl<<"going back"<<std::endl;
+                        break;
+                    }                    
+                    std::cout<<"choose one"<<std::endl;
+                    for (int i = 0; i < size; i++)
+                    {
+                        std::cout<<i<<":shomaredaneshjoi:"<<partisipaters_list[i]<<std::endl;
+                    }
+                    std::cin>>other_input;
+                    if (other_input<size)
+                    {
+                        {
+                            std::string file_name="exam"+std::to_string(other_input)+"student"+partisipaters_list[other_input];
+                            std::string file_path="./exam_student_awnsers/";
+                            bp::handle_file(bp::save_load_funcs::sudent_exam_awnser_load,file_name,bp::save_load_state::load,file_path,bp::delete_old_f_state::dont_delete);                            
+                        }
+                        std::cout<<"------------------------\n"<<*get_g_v_loaded_s_awnser_str()<<"------------------------\n"<<std::endl;
+                        //check if "eterazz"
+                        {
+                            std::string file_name="exam"+std::to_string(other_input)+"student"+partisipaters_list[other_input]+"eteraz";
+                            std::string file_path="./exam_eterazha/";
+                            bp::handle_file(bp::save_load_funcs::eteraz_reload,file_name,bp::save_load_state::load,file_path,bp::delete_old_f_state::dont_delete,&eteraz_existed);
+                        }
+                        if (eteraz_existed)
+                        {
+                           std::cout<<"eteraz:"<<std::endl;
+                           std::cout<<"------------------------\n"<<*get_g_v_loaded_eteraz_string()<<"------------------------\n"<<std::endl;
+                        }
+                        else
+                        {
+                           std::cout<<"hasent found a \"eteraz\" file"<<std::endl;
+                        }
+                        std::cout<<"score?(-1:going back):";
+                        std::cin>>other_input;
+                        if (other_input==-1)
+                        {
+                            std::cout<<"going back"<<std::endl;
+                            break;
+                        }
+                        else
+                        {
+                            //load student score list file
+                        }
+                            
+                    }                    
+                    else
+                    {
+                        std::cout<<"invalid index going back"<<std::endl;
+                    }
+                }
+                else
+                {
+                    std::cout<<"invalid index going back"<<std::endl;
+                    break;
+                }
+                
+            break;
             default:
                 std::cout << "invalid command. try again" << std::endl;
                 break;
