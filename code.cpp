@@ -46,6 +46,7 @@ std::string* get_g_v_loaded_s_awnser_str();
 std::vector<std::string>* get_g_v_awnsers_str_ptr();
 std::string* get_g_v_loaded_eteraz_string();
 std::vector<std::tuple<std::string,int>>* get_g_v_loaded_student_scores();
+bool* get_exam_is_published_stu_mode();
 namespace bp
 {
 
@@ -866,6 +867,18 @@ namespace bp
             if (studnet_mode)
             {
                 _istream >> *student_list_index;
+                //adding published bool
+            std::string temp_in_string;
+            std::getline(_istream >> std::ws, temp_in_string);            
+            if (temp_in_string == "true")
+            {
+                (*get_exam_is_published_stu_mode())=true;
+            }
+            else
+            {
+                (*get_exam_is_published_stu_mode())=false;
+            }
+            //        
             }
         }
     }
@@ -892,7 +905,7 @@ namespace bp
                 bp::file::exam_name_load(&_istream, _ptr);
                 break;
             case bp::save_load_funcs::load_exam_name_and_sl_index:
-                bp::file::exam_name_load(&_istream, _ptr, get_student_mode_slin());
+                bp::file::exam_name_load(&_istream, _ptr, get_student_mode_slin(),true);
                 break;
             case bp::save_load_funcs::students_list_load:
                 bp::file::student_list_f_reaload(&_istream);
@@ -976,6 +989,7 @@ int students_size = -1;
 //load and save files
 namespace g_V
 {
+    bool exam_is_published_stu_mode=false;
     std::vector<std::tuple<std::string, int>> g_v_loaded_student_scores;
     std::string g_v_loaded_eteraz_string;
     std::vector<std::string> awnsers_str_ptr;
@@ -1322,6 +1336,10 @@ namespace g_V
 int* get_student_mode_slin()
 {
     return &g_V::student_mode_stu_l_index;
+}
+bool* get_exam_is_published_stu_mode()
+{
+    return &g_V::exam_is_published_stu_mode;
 }
 std::string* get_g_v_loaded_s_awnser_str()
 {
@@ -1895,6 +1913,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
             int size_size;
             bool is_in_participaters=false;
             int expired_exams_count=0;
+            bool allready_done_that_exam=false;
             switch (command)
             {
             case -1:
@@ -1928,12 +1947,14 @@ void enter_dashboard(bool is_teacher, person* _persone)
                     {
                         if ((*(g_V::loaded_s_l))[j] == stundet_id)
                         {
-                            _student_mode_exam_vector.push_back(i);
+                            _stu_l_vector.push_back(i);
                             break;
                         }
 
                     }
                 }
+                //load exam number file
+                load_e_n_f();
                 //load that number of exam names
                 {
                     if (g_V::exam_names)
@@ -1952,11 +1973,31 @@ void enter_dashboard(bool is_teacher, person* _persone)
                         g_V::exam_names[i] = _exam_name;
                         size = _stu_l_vector.size();
                         int loaded_exam_studnet_list = *get_student_mode_slin();
-                        for (int j = 0; i < size; i++)
+                        for (int j = 0; j < size; j++)
                         {
-                            if (loaded_exam_studnet_list == _stu_l_vector[j])
+                            //now we check if allready havent done that
+                            if ((loaded_exam_studnet_list == _stu_l_vector[j]) &&(*get_exam_is_published_stu_mode()))
                             {
-                                _student_mode_exam_vector.push_back(i);
+                                
+                                std::string file_name{"exam"+std::to_string(i)+"participaters"};                        
+                                std::string _path = "./exam_participaters/";
+                                std::vector<std::string> participater_list;
+                                handle_file(bp::save_load_funcs::exam_load_patcipater_list, file_name, bp::save_load_state::load, _path, bp::delete_old_f_state::dont_delete,&participater_list);
+                                int size=participater_list.size();
+                                allready_done_that_exam=false;
+                                for (int j = 0; j < size; j++)
+                                {
+                                  if (_shomare_danseshjoii==participater_list[j])
+                                    {
+                                        allready_done_that_exam=true;
+                                        break;
+                                    }                            
+                                }  
+                                if (!allready_done_that_exam)
+                                {
+                                    _student_mode_exam_vector.push_back(i);
+                                     break;
+                                }                                  
                                 break;
                             }
 
@@ -1969,9 +2010,17 @@ void enter_dashboard(bool is_teacher, person* _persone)
 
                 //show that many number of exams
                 //show the exam names
+                size = _student_mode_exam_vector.size();
+                if (!size)
+                {
+                    std::cout << "dident find any unpurticipated exam" << std::endl;
+                    std::cout << "going back" << std::endl;
+                    break;
+                }
                 std::cout << "-1 :go back" << std::endl;
                 std::cout << "exams:" << std::endl;
-                size = _student_mode_exam_vector.size();
+                
+                
                 for (int i = 0; i < size; i++)
                 {
                     std::cout << i << " :" << _student_mode_exam_vector[i] << std::endl;
