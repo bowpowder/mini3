@@ -1522,10 +1522,10 @@ void enter_dashboard(bool is_teacher, person* _persone)
             std::cout << "1 : creat a new exam" << '\n';
             std::cout << "2 : exam history" << '\n';
             std::cout << "3 : student lists" << '\n';
-            std::cout << "4 : exam resualts" << std::endl;
-            std::cout << "5 : create new student list" << std::endl;
-            std::cout << "6 : see student awnsers"<<std::endl;
-            std::cout << "7 : see student ranks"<<std::endl;
+           //std::cout << "4 : exam resualts" << std::endl;
+            std::cout << "4 : create new student list" << std::endl;
+            std::cout << "5 : see student awnsers"<<std::endl;
+            std::cout << "6 : see student ranks"<<std::endl;
             int command;
             std::cin >> command;
             int other_input;   
@@ -1623,7 +1623,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
             std::cout << "student lists:" << std::endl;
             for (int i = 0; i < g_V::number_of_s_lists; i++)
             {
-                std::cout << i << " :" << "studentlist " << i;
+                std::cout << i << " :" << "studentlist " << i<<std::endl;
             }
             //let the user choose which one they what to load            
             std::cin >> other_input;
@@ -1644,10 +1644,10 @@ void enter_dashboard(bool is_teacher, person* _persone)
             //let the user edit that list
             g_V::edit_loaded_s_l();
             break;
-            case 5:
+            case 4:
                 g_V::creat_n_s_l();
                 break;
-            case 6:
+            case 5:
              //exam history                
                 //load exam number file
                 load_e_n_f();
@@ -1791,7 +1791,7 @@ void enter_dashboard(bool is_teacher, person* _persone)
                 }
                 
             break;
-            case 7:
+            case 6:
               //exam history                
                 //load exam number file
                 load_e_n_f();
