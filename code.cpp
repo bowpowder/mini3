@@ -66,6 +66,7 @@ namespace bp
     {
         a, b, c, d
     };
+    
     void handle_file(bp::save_load_funcs, std::string, bp::save_load_state, std::string, bp::delete_old_f_state, void* _ptr);
     template<class T>
     class Array
@@ -863,7 +864,8 @@ namespace bp
         {
             std::string& _name = *((std::string*)ptr_name);
             std::istream& _istream = *((std::istream*)ptr_istream);
-            _istream >> _name;
+          // _istream >> _name;
+            std::getline(_istream >> std::ws, _name);   
             if (studnet_mode)
             {
                 _istream >> *student_list_index;
